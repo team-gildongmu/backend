@@ -1,0 +1,7 @@
+# Python virtual environment
+bin/
+lib/
+pyvenv.cfg
+__pycache__/
+*.pyc
+.env
