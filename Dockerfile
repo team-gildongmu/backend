@@ -17,4 +17,4 @@ COPY ./src /app/src
 EXPOSE 8000
 
 # Uvicorn 서버 실행
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
