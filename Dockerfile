@@ -13,6 +13,8 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 # 소스 코드 복사
 COPY ./src /app/src
 
+ENV PYTHONPATH=/app/src
+
 # 포트 오픈
 EXPOSE 8000
 
