@@ -1,10 +1,23 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import text
+from fastapi.middleware.cors import CORSMiddleware
 
 from database.connection import get_db
 
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def read_root():
