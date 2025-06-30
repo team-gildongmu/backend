@@ -2,6 +2,8 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import text
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect
+from api.user import router as user_router
 
 from database.connection import get_db
 
@@ -30,3 +32,13 @@ def test_db(db: Session = Depends(get_db)):
     # 그냥 커넥션 테스트 쿼리
     db.execute(text("SELECT 1"))
     return {"db_connection": "ok"}
+
+@app.get("/tables")
+def list_tables(db: Session = Depends(get_db)):
+    """List all tables in the database"""
+    inspector = inspect(db.bind)
+    tables = inspector.get_table_names()
+    return {"tables": tables}
+
+app.include_router(user_router)
+

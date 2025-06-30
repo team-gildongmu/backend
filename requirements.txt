@@ -14,3 +14,4 @@ typing_extensions==4.14.0
 uvicorn==0.34.3
 SQLAlchemy
 psycopg2-binary
+python-jose
