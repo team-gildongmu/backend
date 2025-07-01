@@ -3,9 +3,9 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import text
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect
-from api.user import router as user_router
+from src.api.user import router as user_router
 
-from database.connection import get_db
+from src.database.connection import get_db
 
 app = FastAPI()
 

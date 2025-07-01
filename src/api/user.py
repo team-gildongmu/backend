@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database.connection import get_db, engine
-from schema.request import KakaoLoginRequest
-from schema.response import KakaoLoginResponse
-from service.user import get_or_create_user
-from service.jwt_utils import create_access_token, create_refresh_token
+from src.database.connection import get_db, engine
+from src.schema.request import KakaoLoginRequest
+from src.schema.response import KakaoLoginResponse
+from src.service.user import get_or_create_user
+from src.utils.jwt_utils import create_access_token, create_refresh_token
 from pydantic import BaseModel, EmailStr, Field
-from database.orm import Base
+from src.database.orm import Base
 
 router = APIRouter(prefix="/auth")
 
@@ -39,6 +39,3 @@ def kakao_login(request: KakaoLoginRequest, db: Session = Depends(get_db)):
         print(f"Error in kakao_login: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-class KakaoLoginRequest(BaseModel):
-    email: EmailStr = Field(..., description="User's email from Kakao")
-    name: str = Field(..., description="User's name from Kakao") 

@@ -1,4 +1,4 @@
-from database.orm import User
+from src.database.orm import User
 from sqlalchemy.orm import Session
 
 def get_or_create_user(db: Session, email: str, name: str):
