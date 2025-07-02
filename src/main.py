@@ -33,12 +33,6 @@ def test_db(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))
     return {"db_connection": "ok"}
 
-@app.get("/tables")
-def list_tables(db: Session = Depends(get_db)):
-    """List all tables in the database"""
-    inspector = inspect(db.bind)
-    tables = inspector.get_table_names()
-    return {"tables": tables}
 
 app.include_router(user_router)
 
