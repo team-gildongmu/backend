@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from src.repository.user_repository import UserRepository
-from src.utils.jwt_utils import create_access_token, create_refresh_token
+from repository.user_repository import UserRepository
+from utils.jwt_utils import create_access_token, create_refresh_token
 
 class UserService:
     def __init__(self, db: Session):

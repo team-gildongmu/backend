@@ -2,12 +2,13 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import text
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import inspect
-from src.api.user import router as user_router
+from api import user
 
-from src.database.connection import get_db
+from database.connection import get_db
 
 app = FastAPI()
+
+app.include_router(user.router)
 
 origins = [
     "http://localhost",
@@ -34,5 +35,4 @@ def test_db(db: Session = Depends(get_db)):
     return {"db_connection": "ok"}
 
 
-app.include_router(user_router)
 
