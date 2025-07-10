@@ -11,7 +11,7 @@ SessionFactory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 # Base.metadata.drop_all(bind=engine) --> to drop!!!
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 # sessionmaker를 통해 생성되는 session 객체: 데이터베이스와 통신하며 쿼리 실행, 트랜잭션 관리
 # 파이썬 제너레이터
