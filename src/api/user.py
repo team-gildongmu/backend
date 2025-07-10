@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from src.database.connection import get_db
-from src.schema.request import KakaoLoginRequest
-from src.schema.response import KakaoLoginResponse
-from src.service.user_service import UserService
+from database.connection import get_db
+from schema.request import KakaoLoginRequest
+from schema.response import KakaoLoginResponse
+from service.user_service import UserService
 from pydantic import BaseModel, EmailStr, Field
 
 router = APIRouter(prefix="/auth")
