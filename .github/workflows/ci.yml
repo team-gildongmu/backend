@@ -26,5 +26,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: 🧪 Lint & basic import test
+      env:
+        PYTHONPATH: src
       run: |
-        python -c "import uvicorn; import fastapi; import src.main"
+        python -c "import uvicorn; import fastapi; import main"
