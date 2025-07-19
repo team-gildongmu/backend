@@ -8,7 +8,7 @@ from service.token_service import TokenService
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, HTTPBearer
 from schema.response import Token
 
 router = APIRouter(prefix="/auth")
@@ -96,6 +96,23 @@ async def login_for_access_token(
         refresh_token=tokens["refresh_token"],
         token_type="bearer"
     )
+
+
+@router.post("/logout")
+async def logout(
+    token: str = Depends(HTTPBearer()),
+    db: Session = Depends(get_db)
+):
+    """
+    Logout endpoint - gets current user from Bearer token and deletes their refresh token.
+    """
+    user_service = UserService(db)
+    
+    # Get current user from the access token
+    current_user = user_service.get_current_user_from_token(token.credentials)
+    
+    # Logout user (service handles repository call)
+    return user_service.logout_user_by_email(current_user.email)
 
 
 

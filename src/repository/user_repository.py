@@ -49,6 +49,13 @@ class UserRepository:
             self.db.delete(refresh_token)
             self.db.commit()
     
+    def delete_refresh_tokens_by_email(self, email: str):
+        """Delete all refresh tokens for a specific email"""
+        refresh_tokens = self.db.query(RefreshToken).filter(RefreshToken.email == email).all()
+        for token in refresh_tokens:
+            self.db.delete(token)
+        self.db.commit()
+    
     # KakaoUser methods (for social login)
     def find_kakao_user_by_email(self, email: str) -> KakaoUser:
         """Find Kakao user by email"""

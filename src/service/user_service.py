@@ -54,7 +54,42 @@ class UserService:
             "refresh_token": refresh_token
         }
     
-    async def get_current_user(self, token: Annotated[str, Depends()]):
+    def logout_user(self, refresh_token: str):
+        """Logout user by invalidating refresh token"""
+        self.user_repository.delete_refresh_token(refresh_token)
+        return {"message": "Successfully logged out"}
+    
+    def logout_user_by_email(self, email: str):
+        """Logout user by deleting all refresh tokens for their email"""
+        self.user_repository.delete_refresh_tokens_by_email(email)
+        return {"message": "Successfully logged out"}
+    
+    def get_current_user_from_token(self, token: str):
+        """Get current user from access token"""
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            email = payload.get("sub")
+            if email is None:
+                raise credentials_exception
+        except InvalidTokenError:
+            raise credentials_exception
+        
+        # Try to find user in both traditional and Kakao user tables
+        user = self.user_repository.get_user_by_email(email)
+        if user is None:
+            # Try Kakao user table
+            user = self.user_repository.find_kakao_user_by_email(email)
+            if user is None:
+                raise credentials_exception
+        
+        return user
+    
+    async def get_current_user(self, token: str):
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -95,5 +130,5 @@ class KakaoUserService:
             "user": user,
             "access_token": access_token,
             "refresh_token": refresh_token
-        } 
-    #
+        }
+    
