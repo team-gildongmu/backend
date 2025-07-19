@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.connection import get_db
-from schema.request import KakaoLoginRequest
+from schema.request import KakaoLoginRequest, UserRegistrationRequest
 from schema.response import KakaoLoginResponse, TokenWithRefresh
 from service.user_service import UserService, KakaoUserService
 from service.token_service import TokenService
@@ -12,6 +12,35 @@ from fastapi.security import OAuth2PasswordRequestForm
 from schema.response import Token
 
 router = APIRouter(prefix="/auth")
+
+@router.post(
+    "/register",
+    responses={
+        201: {"description": "User registered successfully"},
+        400: {"description": "Username or email already exists"},
+        500: {"description": "Internal server error"}
+    }
+)
+def register_user(request: UserRegistrationRequest, db: Session = Depends(get_db)):
+    """
+    Register a new user with username, email, and password.
+    
+    - **username**: Unique username for the user
+    - **email**: User's email address
+    - **password**: User's password (will be hashed)
+    """
+    try:
+        user_service = UserService(db)
+        user = user_service.create_user(
+            username=request.username,
+            email=request.email,
+            password=request.password
+        )
+        return {"message": "User registered successfully", "user_id": user.id}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.post(
     "/kakao/login",
@@ -69,18 +98,6 @@ async def login_for_access_token(
     )
 
 
-@router.post("/logout")
-async def logout(refresh_token: str, db: Session = Depends(get_db)):
-    """
-    Logout endpoint to invalidate refresh token.
-    
-    - **refresh_token**: The refresh token to invalidate
-    """
-    user_service = UserService(db)
-    
-    # Delete refresh token from the single table
-    user_service.user_repository.delete_refresh_token(refresh_token)
-    
-    return {"message": "Successfully logged out"}
+
 
 

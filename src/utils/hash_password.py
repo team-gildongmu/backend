@@ -11,3 +11,8 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
+def hash_password(password):
+    """Alias for get_password_hash for consistency"""
+    return get_password_hash(password)
+
+

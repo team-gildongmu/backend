@@ -10,6 +10,23 @@ class UserRepository:
         """Get user by email for traditional login"""
         return self.db.query(User).filter(User.email == email).first()
     
+    def get_user_by_username(self, username: str) -> User:
+        """Get user by username"""
+        return self.db.query(User).filter(User.username == username).first()
+    
+    def create_user(self, username: str, email: str, hashed_password: str) -> User:
+        """Create a new traditional user with hashed password"""
+        user = User(
+            username=username,
+            email=email,
+            hashed_password=hashed_password,
+            name=username  # Using username as name for simplicity
+        )
+        self.db.add(user)
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+    
     def save_refresh_token(self, email: str, token: str) -> RefreshToken:
         """Save refresh token linked by email"""
         refresh_token = RefreshToken(
@@ -58,3 +75,4 @@ class UserRepository:
         if not user:
             user = self.create_kakao_user(name, email)
         return user
+#
