@@ -1,7 +1,9 @@
-from sqlalchemy import Column, Integer, String, Text, Enum, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Enum, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+
+from sqlalchemy.sql.sqltypes import Float
 
 Base = declarative_base()
 
@@ -24,4 +26,32 @@ class RefreshToken(Base):
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     token = Column(String(512), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    user = relationship('User', back_populates='refresh_tokens') 
+    user = relationship('User', back_populates='refresh_tokens')
+
+class TravelLog(Base) :
+    __tablename__ = "travel_log"
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    title = Column(String(256), nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id")) # 외래키
+
+class TravelLocation(Base) :
+    __tablename__ = "travel_location"
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    travel_log_id = Column(Integer, ForeignKey("travel_log.id"))  # 외래키
+    user_id = Column(Integer, ForeignKey("user.id")) # 외래키
+    name = Column(String(256), nullable=False)
+    sequence = Column(Integer, nullable=False)
+    longitude = Column(Float, nullable=False)
+    latitude = Column(Float, nullable=False)
+    congestion = Column(String(256), nullable=False)
+
+class TravelStamp(Base) :
+    __tablename__ = "travel_stamp"
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    travel_log_id = Column(Integer, ForeignKey("travel_log.id"))  # 외래키
+    travel_location_id = Column(Integer, ForeignKey("travel_location.id"))  # 외래키
+    user_id = Column(Integer, ForeignKey("user.id")) # 외래키
+    title = Column(String(256), nullable=False)
+    emotion = Column(String(256), nullable=False)
+    isStamped = Column(Boolean, nullable=False)
+    stamped_at = Column(DateTime, nullable=False)
