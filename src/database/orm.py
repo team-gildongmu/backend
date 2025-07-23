@@ -18,7 +18,7 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    kakao = relationship("KakaoUser", back_populates="user", uselist=False)
+    kakao = relationship("KakaoUser", back_populates="user", uselist=False, cascade='all, delete-orphan')
 
 
 class KakaoUser(Base):
