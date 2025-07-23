@@ -11,8 +11,9 @@ app = FastAPI()
 app.include_router(user.router)
 
 origins = [
-    "http://localhost",
     "http://localhost:3000",
+    "http://localhost:3001",
+    "https://frontend-psi-five-43.vercel.app"
 ]
 
 app.add_middleware(
