@@ -1,21 +1,30 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from schema.request import KakaoLoginRequest, KakaoUnlinkRequest
 from schema.response import KakaoLoginResponse, UnlinkResponse
 from service.user_service import KakaoUserService
 import os
+import json
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth")
 
-@router.get("/kakao/login-url")
-def get_kakao_login_url():
-    """Get Kakao login URL"""
-    client_id = os.getenv("KAKAO_CLIENT_ID")
-    redirect_uri = os.getenv("KAKAO_REDIRECT_URI")
-    return {
-        "login_url": f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
-    }
+
+#handled in FE
+# @router.get("/kakao/login-url")
+# def get_kakao_login_url():
+#     """Get Kakao login URL"""
+#     client_id = os.getenv("KAKAO_CLIENT_ID")
+#     redirect_uri = os.getenv("KAKAO_REDIRECT_URI", "http://localhost:3000/oauth/kakao")
+#     return {
+#         "login_url": f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+#     }
 
 @router.post(
     "/kakao/callback",
@@ -26,30 +35,52 @@ def get_kakao_login_url():
         500: {"description": "Internal server error"}
     }
 )
-def kakao_callback(request: KakaoLoginRequest, db: Session = Depends(get_db)):
+async def kakao_callback(request: KakaoLoginRequest, db: Session = Depends(get_db)):
     """
     Handle Kakao OAuth callback.
-    
-    - **code**: Authorization code from Kakao
-    
-    Returns access and refresh JWT tokens along with Kakao tokens.
     """
     try:
-        kakao_user_service = KakaoUserService(db)
-        result = kakao_user_service.authenticate_with_kakao(request.code)
+        # Log the received code
+        logger.info(f"Received authorization code: {request.code[:10]}...")
         
-        return KakaoLoginResponse(
-            access_token=result['access_token'],
-            refresh_token=result['refresh_token'],
-            user_id=result['user'].id,
-            kakao_access_token=result['kakao_access_token'],
-            kakao_refresh_token=result['kakao_refresh_token'],
-            kakao_token_expires_in=result['kakao_token_expires_in']
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        # Check if we have the required environment variables
+        client_id = os.getenv("KAKAO_CLIENT_ID")
+        if not client_id:
+            logger.error("Missing KAKAO_CLIENT_ID environment variable")
+            raise HTTPException(
+                status_code=500,
+                detail="Server configuration error: Missing KAKAO_CLIENT_ID"
+            )
+            
+        # Initialize service
+        user_service = KakaoUserService(db)
+        
+        try:
+            result = user_service.authenticate_with_kakao(request.code)
+            return KakaoLoginResponse(
+                access_token=result['access_token'],
+                refresh_token=result['refresh_token'],
+                user_id=result['user'].id,
+                kakao_access_token=result['kakao_access_token'],
+                kakao_refresh_token=result['kakao_refresh_token'],
+                kakao_token_expires_in=result['kakao_token_expires_in']
+            )
+        except Exception as service_error:
+            logger.error(f"Error in KakaoUserService: {str(service_error)}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Authentication failed: {str(service_error)}"
+            )
+            
+    except HTTPException as http_error:
+        # Re-raise HTTP exceptions
+        raise http_error
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        logger.error(f"Unexpected error in callback: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal Server Error: {str(e)}"
+        )
 
 @router.post(
     "/kakao/unlink",

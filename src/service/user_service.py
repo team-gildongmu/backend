@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from repository.user_repository import UserRepository
+from repository.user_repository import KakaoUserRepository
 from utils.jwt_utils import create_access_token, create_refresh_token
 from utils.kakao_client import KakaoClient
 from typing import Dict
@@ -7,11 +7,11 @@ import os
 
 class KakaoUserService:
     def __init__(self, db: Session):
-        self.user_repository = UserRepository(db)
+        self.user_repository = KakaoUserRepository(db)
         self.kakao_client = KakaoClient(
             client_id=os.getenv("KAKAO_CLIENT_ID"),
             client_secret=os.getenv("KAKAO_CLIENT_SECRET"),
-            redirect_uri=os.getenv("KAKAO_REDIRECT_URI")
+            redirect_uri=os.getenv("KAKAO_REDIRECT_URI", "http://localhost:3000/oauth/kakao")
         )
     
     def authenticate_with_kakao(self, code: str) -> Dict:
@@ -21,17 +21,33 @@ class KakaoUserService:
         
         # Get user info from Kakao
         user_info = self.kakao_client.get_user_info(kakao_token_info['access_token'])
+        print("==============================")
+        print(user_info)
         
         # Extract user details from Kakao response
         kakao_account = user_info.get('kakao_account', {})
-        profile = kakao_account.get('profile', {})
         
+        # Get email from kakao_account
         email = kakao_account.get('email')
         if not email:
             raise ValueError("Email not provided by Kakao")
-            
-        name = profile.get('nickname', 'Unknown')
-        profile_photo = profile.get('profile_image_url')
+        
+        # Get profile info - first try kakao_account.profile, then properties
+        profile = kakao_account.get('profile', {}) or user_info.get('properties', {})
+        
+        # Get name/nickname - try multiple possible locations
+        name = (profile.get('nickname') or 
+                user_info.get('properties', {}).get('nickname') or 
+                'Unknown')
+        
+        # Get profile photo - try multiple possible locations
+        profile_photo = (profile.get('profile_image_url') or 
+                        profile.get('profile_image') or 
+                        None)
+        
+        # Ensure values are strings
+        name = str(name) if name else 'Unknown'
+        profile_photo = str(profile_photo) if profile_photo else None
         
         # Get or create user
         user = self.user_repository.get_or_create_user(
@@ -43,14 +59,14 @@ class KakaoUserService:
         # Generate our JWT tokens
         access_token = create_access_token(user.id, user.email)
         refresh_token = create_refresh_token(user.id, user.email)
+
+        print(access_token)
+        print(refresh_token)
         
         return {
             "user": user,
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "kakao_access_token": kakao_token_info['access_token'],
-            "kakao_refresh_token": kakao_token_info.get('refresh_token'),
-            "kakao_token_expires_in": kakao_token_info.get('expires_in')
         }
     
     def unlink_kakao(self, access_token: str) -> Dict:
