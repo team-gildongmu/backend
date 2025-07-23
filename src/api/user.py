@@ -87,6 +87,7 @@ async def kakao_callback(request: KakaoLoginRequest, db: Session = Depends(get_d
     response_model=UnlinkResponse,
     responses={
         200: {"description": "Successfully unlinked from Kakao"},
+        400: {"description": "Bad request - invalid token"},
         500: {"description": "Internal server error"}
     }
 )
@@ -101,6 +102,17 @@ def kakao_unlink(request: KakaoUnlinkRequest, db: Session = Depends(get_db)):
         result = user_service.unlink_kakao(request.access_token)
         return UnlinkResponse(**result)
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        # Log the error for debugging
+        logger.error(f"Error unlinking from Kakao: {str(e)}")
+        
+        # Check if it's a 4xx error (client error) or 5xx error (server error)
+        if hasattr(e, 'response') and hasattr(e.response, 'status_code'):
+            if e.response.status_code >= 400 and e.response.status_code < 500:
+                raise HTTPException(status_code=400, detail=f"Failed to unlink: {str(e)}")
+            else:
+                raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        else:
+            # Default to 500 for unexpected errors
+            raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 

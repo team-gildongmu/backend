@@ -44,8 +44,7 @@ class KakaoUserRepository:
         try:
             logger.info(f"Looking for user with email: {email}")
             user = self.find_by_email(email)
-            print("==============================")
-            print(user.email)
+
             
             if not user:
                 logger.info("User not found, creating new user")

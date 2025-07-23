@@ -21,8 +21,6 @@ class KakaoUserService:
         
         # Get user info from Kakao
         user_info = self.kakao_client.get_user_info(kakao_token_info['access_token'])
-        print("==============================")
-        print(user_info)
         
         # Extract user details from Kakao response
         kakao_account = user_info.get('kakao_account', {})
@@ -59,9 +57,6 @@ class KakaoUserService:
         # Generate our JWT tokens
         access_token = create_access_token(user.id, user.email)
         refresh_token = create_refresh_token(user.id, user.email)
-
-        print(access_token)
-        print(refresh_token)
         
         return {
             "user": user,
@@ -78,7 +73,5 @@ class KakaoUserService:
                 "message": f"Successfully unlinked Kakao user ID: {result.get('id')}"
             }
         except Exception as e:
-            return {
-                "success": False,
-                "message": f"Failed to unlink: {str(e)}"
-            } 
+            # Re-raise the exception to be handled by the API layer
+            raise e 
