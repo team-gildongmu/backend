@@ -42,4 +42,4 @@ class RefreshToken(Base):
     token = Column(String(512), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    user = relationship("User", backref="refresh_tokens")
+    user = relationship("User", back_populates="refresh_tokens")
