@@ -2,30 +2,33 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import text
 from fastapi.middleware.cors import CORSMiddleware
-from api import user
+from api import user, travel
+import os
 
 from database.connection import get_db
 
 app = FastAPI()
 
-app.include_router(user.router)
-
-origins = [
-    "http://localhost",
-    "http://localhost:3000",
-]
-
+# Add CORS middleware first, before including routers
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "http://localhost",
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://frontend-psi-five-43.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+app.include_router(user.router)
+app.include_router(travel.router)
+
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"message": "GilTongmu!"}
 
 # DB 연결 테스트용 - 추후 삭제
 @app.get("/test-db")
