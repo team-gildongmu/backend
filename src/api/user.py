@@ -12,6 +12,9 @@ import logging
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth")
 
@@ -61,9 +64,7 @@ async def kakao_callback(request: KakaoLoginRequest, db: Session = Depends(get_d
                 access_token=result['access_token'],
                 refresh_token=result['refresh_token'],
                 user_id=result['user'].id,
-                kakao_access_token=result['kakao_access_token'],
-                kakao_refresh_token=result['kakao_refresh_token'],
-                kakao_token_expires_in=result['kakao_token_expires_in']
+
             )
         except Exception as service_error:
             logger.error(f"Error in KakaoUserService: {str(service_error)}")
@@ -114,5 +115,7 @@ def kakao_unlink(request: KakaoUnlinkRequest, db: Session = Depends(get_db)):
         else:
             # Default to 500 for unexpected errors
             raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
 
 

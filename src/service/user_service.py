@@ -10,7 +10,6 @@ class KakaoUserService:
         self.user_repository = KakaoUserRepository(db)
         self.kakao_client = KakaoClient(
             client_id=os.getenv("KAKAO_CLIENT_ID"),
-            client_secret=os.getenv("KAKAO_CLIENT_SECRET"),
             redirect_uri=os.getenv("KAKAO_REDIRECT_URI", "http://localhost:3000/oauth/kakao")
         )
     
