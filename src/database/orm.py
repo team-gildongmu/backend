@@ -20,7 +20,7 @@ class User(Base):
     thema = Column(Text, nullable=True)
 
 
-    kakao = relationship("KakaoUser", back_populates="user", uselist=False)
+    kakao = relationship("KakaoUser", back_populates="user", uselist=False, cascade='all, delete-orphan')
 
 
 class KakaoUser(Base):
@@ -41,4 +41,4 @@ class RefreshToken(Base):
     token = Column(String(512), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    user = relationship("User", backref="refresh_tokens")
+    user = relationship("User", back_populates="refresh_tokens")
