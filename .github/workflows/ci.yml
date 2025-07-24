@@ -33,6 +33,7 @@ jobs:
         ALGORITHM: HS256
         KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
 
       run: |
