@@ -4,13 +4,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class UserRepository:
+class KakaoUserRepository:
     def __init__(self, db: Session):
         self.db = db
     
-    def find_by_email(self, email: str) -> User:
+    def find_by_email(self, email: str) -> KakaoUser:
         """Find user by email"""
-        return self.db.query(User).filter(User.email == email).first()
+        return self.db.query(KakaoUser).filter(KakaoUser.email == email).first()
     
     def create_user(self, name: str, email: str, auth_provider: str = 'kakao', hashed_password: str = None) -> User:
         """Create a new user"""
