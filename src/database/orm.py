@@ -15,8 +15,7 @@ class User(Base):
     auth_provider = Column(Enum('local', 'kakao', name='auth_provider'), nullable=False, default='local')
     intro = Column(Text, nullable=True)
     language_cd = Column(Enum('KO', 'EN', 'JP', 'CN', 'FR', 'RU', name='language_cd'), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
 
     kakao = relationship("KakaoUser", back_populates="user", uselist=False)
 
@@ -28,9 +27,6 @@ class KakaoUser(Base):
 
     nickname = Column(String(255), nullable=True)
     profile_photo = Column(String(255), nullable=True)
-
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     user = relationship("User", back_populates="kakao")
 
