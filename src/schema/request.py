@@ -5,4 +5,4 @@ class KakaoLoginRequest(BaseModel):
 
 
 class KakaoUnlinkRequest(BaseModel):
-    access_token: str = Field(..., description="Kakao access token to unlink")
+    access_token: str = Field(..., description="Kakao access token to unlink") 
