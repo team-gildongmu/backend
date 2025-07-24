@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from database.connection import get_db
-from schema.request import KakaoLoginRequest, KakaoLoginEmailRequest, KakaoUnlinkRequest
+from schema.request import KakaoLoginRequest, KakaoUnlinkRequest
 from schema.response import KakaoLoginResponse, UnlinkResponse
 from service.user_service import KakaoUserService
 import os
