@@ -4,7 +4,6 @@ from typing import Dict, Optional
 class KakaoClient:
     def __init__(self, client_id: str, client_secret: Optional[str], redirect_uri: str):
         self.client_id = client_id
-        self.client_secret = client_secret
         self.redirect_uri = redirect_uri
         self.token_url = "https://kauth.kakao.com/oauth/token"
         self.user_info_url = "https://kapi.kakao.com/v2/user/me"
@@ -18,9 +17,6 @@ class KakaoClient:
             "code": code
         }
         
-        # Only add client_secret if it's provided
-        if self.client_secret:
-            data["client_secret"] = self.client_secret
         
         response = requests.post(self.token_url, data=data)
         response.raise_for_status()
