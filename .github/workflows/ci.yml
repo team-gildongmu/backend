@@ -28,5 +28,12 @@ jobs:
     - name: 🧪 Lint & basic import test
       env:
         PYTHONPATH: src
+        ACCESS_TOKEN_EXPIRE_MINUTES: 30
+        REFRESH_TOKEN_EXPIRE_DAYS: 7
+        ALGORITHM: HS256
+        KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        
+
       run: |
         python -c "import uvicorn; import fastapi; import main"
