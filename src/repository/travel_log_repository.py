@@ -1,11 +1,9 @@
-from fastapi import Depends
 from sqlalchemy.orm import Session
-from database.connection import get_db
-from database.orm import TravelLog
+from database.travel_orm import TravelLog
 
 
 class TravelLogRepository:
-    def __init__(self, session: Session =  Depends(get_db)):
+    def __init__(self, session: Session):
         self.session = session
 
     def create_travel_log(self, travelLog: TravelLog) -> TravelLog:

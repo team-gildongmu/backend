@@ -1,11 +1,8 @@
-from fastapi import Depends
-from sqlalchemy.orm import Session
-from database.connection import get_db
-from database.orm import TravelStamp
+from database.travel_orm import TravelStamp
 
 
 class TravelStampRepository:
-    def __init__(self, session: Session =  Depends(get_db)):
+    def __init__(self, session):
         self.session = session
 
     def create_travel_stamps(self, travel_stamps: list[TravelStamp]) -> list[TravelStamp]:
