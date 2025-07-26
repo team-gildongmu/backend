@@ -11,7 +11,7 @@ class TravelLog(Base, BaseEntity):
     __tablename__ = "travel_log"
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     title = Column(String(256), nullable=False)
-    #user_id = Column(Integer, ForeignKey("user.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
 
     @classmethod
     def create(cls, request: TravelLogCreateRequest) -> "TravelLog":
@@ -24,7 +24,7 @@ class TravelLocation(Base, BaseEntity) :
     __tablename__ = "travel_location"
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     travel_log_id = Column(Integer, ForeignKey("travel_log.id"))
-    #user_id = Column(Integer, ForeignKey("user.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
     name = Column(String(256), nullable=False)
     sequence = Column(Integer, nullable=False)
     longitude = Column(Float, nullable=False)
@@ -48,9 +48,8 @@ class TravelStamp(Base, BaseEntity) :
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     travel_log_id = Column(Integer, ForeignKey("travel_log.id"))
     travel_location_id = Column(Integer, ForeignKey("travel_location.id"))
-    #user_id = Column(Integer, ForeignKey("user.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
     title = Column(String(256), nullable=False)
-    emotion = Column(String(256), nullable=False)
     is_stamped = Column(Boolean, nullable=False)
     stamped_at = Column(DateTime, nullable=False)
 
