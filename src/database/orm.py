@@ -3,6 +3,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
+from sqlalchemy.sql.sqltypes import Float
+
 Base = declarative_base()
 
 class User(Base):
@@ -18,16 +20,14 @@ class User(Base):
     gender = Column(Enum('female', 'male', 'unspecified', name='gender'), nullable=True)
     age = Column(Integer, nullable=True)
     thema = Column(Text, nullable=True)
-
-
+    refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
     kakao = relationship("KakaoUser", back_populates="user", uselist=False, cascade='all, delete-orphan')
 
 
 class KakaoUser(Base):
     __tablename__ = 'kakao_user'
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, unique=True)
-
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False, unique=True)
     nickname = Column(String(255), nullable=True)
     profile_photo = Column(String(255), nullable=True)
 
@@ -35,10 +35,8 @@ class KakaoUser(Base):
 
 class RefreshToken(Base):
     __tablename__ = 'refresh_token'
-    
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False, index=True)
     token = Column(String(512), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-
-    user = relationship("User", back_populates="refresh_tokens")
+    user = relationship('User', back_populates='refresh_tokens')

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 class KakaoLoginRequest(BaseModel):
     code: str = Field(..., description="Authorization code from Kakao")

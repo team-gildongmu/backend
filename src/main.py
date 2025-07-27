@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import text
 from fastapi.middleware.cors import CORSMiddleware
-from api import user
+from api import user, travel
 import os
 
 from database.connection import get_db
@@ -24,6 +24,7 @@ app.add_middleware(
 )
 
 app.include_router(user.router)
+app.include_router(travel.router)
 
 @app.get("/")
 def read_root():
