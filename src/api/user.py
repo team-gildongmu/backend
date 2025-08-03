@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from schema.request import KakaoLoginRequest, KakaoUnlinkRequest
@@ -14,17 +15,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth")
-
-
-#handled in FE
-# @router.get("/kakao/login-url")
-# def get_kakao_login_url():
-#     """Get Kakao login URL"""
-#     client_id = os.getenv("KAKAO_CLIENT_ID")
-#     redirect_uri = os.getenv("KAKAO_REDIRECT_URI", "http://localhost:3000/oauth/kakao")
-#     return {
-#         "login_url": f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
-#     }
 
 @router.post(
     "/kakao/callback",

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import text
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,6 +9,8 @@ import os
 from database.connection import get_db
 
 app = FastAPI()
+
+
 
 # Add CORS middleware first, before including routers
 app.add_middleware(
@@ -36,6 +39,8 @@ def test_db(db: Session = Depends(get_db)):
     # 그냥 커넥션 테스트 쿼리
     db.execute(text("SELECT 1"))
     return {"db_connection": "ok"}
+
+
 
 
 
