@@ -3,13 +3,13 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import text
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from api import user, travel
 import os
 
 from database.connection import get_db
 
 app = FastAPI()
-
 
 
 # Add CORS middleware first, before including routers
