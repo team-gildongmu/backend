@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from src.repository.user_repository import UserRepository
-from src.utils.jwt_utils import create_access_token, create_refresh_token
+from repository.user_repository import UserRepository
+from utils.jwt_utils import create_access_token, create_refresh_token
 import requests
 import os
 import logging
@@ -10,10 +10,11 @@ logger = logging.getLogger(__name__)
 class UserService:
     def __init__(self, db: Session):
         self.user_repository = UserRepository(db)
-    
+
     def authenticate_with_kakao(self, authorization_code: str):
         """Complete Kakao OAuth flow and return user with tokens"""
         try:
+
             kakao_access_token = self._get_kakao_access_token(authorization_code)
             kakao_profile = self._get_kakao_user_profile(kakao_access_token)
             user, is_new_user = self.user_repository.get_or_create_kakao_user(kakao_profile)
@@ -21,9 +22,9 @@ class UserService:
             refresh_token = create_refresh_token(user.id, user.email)
             
             logger.info(f"User {'created' if is_new_user else 'authenticated'}: {user.username} ({user.email})")
-            
+      
             return {
-                "user": user,
+                "user_id": user.id,
                 "user_name": user.username,
                 "access_token": access_token,
                 "refresh_token": refresh_token,
@@ -51,7 +52,6 @@ class UserService:
         
         response = requests.post(token_url, data=data)
         response.raise_for_status()
-        
         token_data = response.json()
         return token_data["access_token"]
     
@@ -62,5 +62,4 @@ class UserService:
         
         response = requests.get(profile_url, headers=headers)
         response.raise_for_status()
-        
         return response.json() 

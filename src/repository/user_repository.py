@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from src.database.orm import User, KakaoUser
+from database.orm import User, KakaoUser
 from typing import Optional, Tuple
 
 class UserRepository:
@@ -16,6 +16,34 @@ class UserRepository:
     
     def create_kakao_user(self, kakao_profile: dict) -> User:
         """Create new user from Kakao profile"""
+        """
+        Input: 
+        {
+            "id": "REDACTED_USER_ID",
+            "connected_at": "2025-07-23T00:33:59Z",
+            "properties": {
+                "nickname": "REDACTED_NICKNAME",
+                "profile_image": "REDACTED_IMAGE_URL",
+                "thumbnail_image": "REDACTED_IMAGE_URL"
+            },
+            "kakao_account": {
+                "profile_nickname_needs_agreement": false,
+                "profile_image_needs_agreement": false,
+                "profile": {
+                "nickname": "REDACTED_NICKNAME",
+                "thumbnail_image_url": "REDACTED_IMAGE_URL",
+                "profile_image_url": "REDACTED_IMAGE_URL",
+                "is_default_image": false,
+                "is_default_nickname": false
+                },
+                "has_email": true,
+                "email_needs_agreement": false,
+                "is_email_valid": true,
+                "is_email_verified": true,
+                "email": "REDACTED_EMAIL"
+            }
+            }
+        """
         # Create main user
         user = User(
             username=kakao_profile["properties"]["nickname"], #???
@@ -29,6 +57,7 @@ class UserRepository:
         kakao_user = KakaoUser(
             user_id=user.id,
             nickname=kakao_profile["properties"]["nickname"],
+            ### Profile image OT thumbnail..?
             profile_photo=kakao_profile["properties"].get("profile_image")
         )
         self.db.add(kakao_user)
@@ -41,6 +70,7 @@ class UserRepository:
         Get existing user or create new one from Kakao profile
         Returns: (user, is_new_user)
         """
+
         # Check if user exists by email
         user = self.find_by_email(kakao_profile["kakao_account"]["email"])
         

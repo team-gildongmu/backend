@@ -19,6 +19,7 @@ def create_access_token(user_id, email):
     return encoded_jwt
 
 
+
 def create_refresh_token(user_id, email):
     to_encode = {
         "user_id": str(user_id),
