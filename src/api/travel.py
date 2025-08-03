@@ -22,8 +22,9 @@ def create_travel_log_handler(
     payload: dict = Depends(JWTBearer()),
 ):
     try:
-        user_id = int(payload["user_id"])
-        if not user_id:
+        try:
+            user_id = int(payload["user_id"])
+        except (KeyError, ValueError, TypeError):
             raise HTTPException(status_code=403, detail="Invalid or expired token.")
 
 
