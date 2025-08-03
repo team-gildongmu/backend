@@ -57,8 +57,6 @@ async def kakao_callback(request: KakaoLoginRequest, db: Session = Depends(get_d
         
         try:
             result = user_service.authenticate_with_kakao(request.code)
-            print("Service result:", result)
-            print("Result keys:", result.keys() if result else "None")
             
             # Check if all required fields are present
             if not result or 'access_token' not in result or 'refresh_token' not in result:
