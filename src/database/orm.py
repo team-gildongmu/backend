@@ -10,10 +10,9 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = 'user' #단수형으로 동일시키기.
     id = Column(Integer, primary_key=True, autoincrement=True)
-    username = Column(String(255), unique=True, nullable=True) #for local only.
+    username = Column(String(255), unique=True, nullable=False) #first from kakao
     email = Column(String(255), unique=True, nullable=False)
     hashed_password = Column(String(255), nullable=True)  #NB:  does not exist in kakao!
-    name = Column(String(255), nullable=False)
     auth_provider = Column(Enum('local', 'kakao', name='auth_provider'), nullable=False, default='local')
     intro = Column(Text, nullable=True)
     language_cd = Column(Enum('KO', 'EN', 'JP', 'CN', 'FR', 'RU', name='language_cd'), nullable=True)
@@ -30,7 +29,6 @@ class KakaoUser(Base):
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False, unique=True)
     nickname = Column(String(255), nullable=True)
     profile_photo = Column(String(255), nullable=True)
-
     user = relationship("User", back_populates="kakao")
 
 class RefreshToken(Base):

@@ -14,9 +14,10 @@ class TravelLog(Base, BaseEntity):
     user_id = Column(Integer, ForeignKey("user.id"))
 
     @classmethod
-    def create(cls, request: TravelLogCreateRequest) -> "TravelLog":
+    def create(cls, request: TravelLogCreateRequest, user_id: int) -> "TravelLog":
         return cls(
             title=request.title,
+            user_id=user_id,
         )
 
 
@@ -39,7 +40,8 @@ class TravelLocation(Base, BaseEntity) :
             longitude=request.longitude,
             latitude=request.latitude,
             congestion=request.congestion,
-            travel_log_id=travel_log.id
+            travel_log_id=travel_log.id,
+            user_id=travel_log.user_id,
         )
 
 
@@ -60,6 +62,7 @@ class TravelStamp(Base, BaseEntity) :
                 title=location.name,
                 travel_log_id=travel_log.id,
                 travel_location_id=location.id,
+                user_id=travel_log.user_id,
             )
             for location in travel_locations
         ]

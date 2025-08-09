@@ -14,17 +14,17 @@ class TravelLogService:
         self.travel_location_repo = TravelLocationRepository(session)
         self.travel_stamp_repo = TravelStampRepository(session)
 
-    def create_travel_log(self, request: TravelLogCreateRequest):
+    def create_travel_log(self, request: TravelLogCreateRequest, user_id: int):
         try:
             with self.session.begin():
-                travel_log = TravelLog.create(request)
+                travel_log = TravelLog.create(request, user_id)
                 saved_travel_log = self.travel_log_repo.create_travel_log(travel_log)
                 print(f"Travel log created: {saved_travel_log.id}")
 
                 travel_locations = [
                     TravelLocation.create(loc_req, saved_travel_log)
                     for loc_req in request.locationCreateRequest
-                ]
+                ] 
                 saved_travel_locations = self.travel_location_repo.create_travel_locations(travel_locations)
                 print(f"Travel locations created: {len(saved_travel_locations)}")
 
