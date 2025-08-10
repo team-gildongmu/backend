@@ -10,7 +10,7 @@ router = APIRouter(prefix="/travel")
 
 @router.post(
     "/review",
-    response_model=TravelReviewCreateRequest,
+    response_model=TravelReviewCreateResponse,
     responses={
         200: {"description": "Travel review created"},
         500: {"description": "Internal server error"}
