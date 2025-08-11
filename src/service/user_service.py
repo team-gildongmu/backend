@@ -76,3 +76,34 @@ class UserService:
         new_access_token = create_access_token(user.id, user.email)
         return {"access_token": new_access_token, "email": user.email}
 
+    def revoke_refresh_token(self, raw_refresh_token: str) -> None:
+        # Best-effort delete; do not reveal whether token existed
+        self.refresh_token_repository.delete_by_token(raw_refresh_token)
+
+    def revoke_all_refresh_tokens_for_user(self, user_id: int) -> None:
+        self.refresh_token_repository.delete_all_for_user(user_id)
+
+    def rotate_refresh_token(self, old_refresh_token: str) -> Dict:
+        payload = decode_token(old_refresh_token)
+        if not payload:
+            raise ValueError("Invalid or expired refresh token")
+
+        # verify old token still stored
+        token_row = self.refresh_token_repository.find_by_token(old_refresh_token)
+        if token_row is None:
+            raise ValueError("Refresh token not recognized")
+
+        email = payload.get("email")
+        user = self.user_repository.find_by_email(email)
+        if not user:
+            raise ValueError("User does not exist")
+
+        # revoke old and issue new
+        self.refresh_token_repository.delete_by_token(old_refresh_token)
+        new_refresh = create_refresh_token(user.id, user.email)
+        self.refresh_token_repository.save(user.id, new_refresh)
+
+        # optionally issue a new access token alongside rotation
+        new_access = create_access_token(user.id, user.email)
+        return {"access_token": new_access, "refresh_token": new_refresh, "email": user.email}
+

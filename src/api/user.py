@@ -114,7 +114,7 @@ def kakao_unlink(request: KakaoUnlinkRequest, db: Session = Depends(get_db)):
         
 
     
-@router.post("/refresh")
+@router.post("/refresh", response_model=RefreshTokenResponse)
 async def refresh_token(refresh_token: str = Depends(get_refresh_token_from_cookie), db: Session = Depends(get_db)):
     if not refresh_token:
         raise HTTPException(status_code=401, detail="No refresh token")
