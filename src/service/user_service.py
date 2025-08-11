@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from repository.user_repository import UserRepository
-from utils.jwt_utils import create_access_token, create_refresh_token
+from repository.refresh_token_repository import RefreshTokenRepository
+from utils.jwt_utils import create_access_token, create_refresh_token, decode_token
 from utils.kakao_client import KakaoClient
 import os
 import logging
@@ -11,6 +12,7 @@ logger = logging.getLogger(__name__)
 class UserService:
     def __init__(self, db: Session):
         self.user_repository = UserRepository(db)
+        self.refresh_token_repository = RefreshTokenRepository(db)
         # Initialize KakaoClient with environment variables
         client_id = os.getenv("KAKAO_CLIENT_ID")
         client_secret = os.getenv("KAKAO_CLIENT_SECRET")
@@ -26,6 +28,8 @@ class UserService:
             user, is_new_user = self.user_repository.get_or_create_kakao_user(kakao_profile)
             access_token = create_access_token(user.id, user.email)
             refresh_token = create_refresh_token(user.id, user.email)
+            # persist refresh token
+            self.refresh_token_repository.save(user.id, refresh_token)
             
             logger.info(f"User {'created' if is_new_user else 'authenticated'}: {user.username} ({user.email})")
       
@@ -52,4 +56,23 @@ class UserService:
         except Exception as e:
             # Re-raise the exception to be handled by the API layer
             raise e 
+
+    def refresh_access_token(self, raw_refresh_token: str) -> Dict:
+        """Validate refresh token: verify it exists in DB, then issue a new access token."""
+        payload = decode_token(raw_refresh_token)
+        if not payload:
+            raise ValueError("Invalid or expired refresh token")
+
+       
+        token_row = self.refresh_token_repository.find_by_token(raw_refresh_token)
+        if token_row is None:
+            raise ValueError("Refresh token not recognized")
+
+        email = payload.get("email")
+        user = self.user_repository.find_by_email(email)
+        if not user:
+            raise ValueError("User does not exist")
+
+        new_access_token = create_access_token(user.id, user.email)
+        return {"access_token": new_access_token, "email": user.email}
 
