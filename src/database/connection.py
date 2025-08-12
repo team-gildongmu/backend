@@ -22,6 +22,10 @@ SessionFactory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 def get_db():
     session = SessionFactory()
     try:
-        yield session
+        yield session          # ← 여기까지 모든 DB 작업 수행
+        session.commit()       # 성공 경로: 커밋
+    except Exception:
+        session.rollback()     # 실패 경로: 롤백 (응답 검증 실패 포함)
+        raise
     finally:
         session.close()
