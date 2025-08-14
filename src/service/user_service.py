@@ -95,8 +95,9 @@ class UserService:
 
         email = payload.get("email")
         user = self.user_repository.find_by_email(email)
-        if not user:
-            raise ValueError("User does not exist")
+        if not user or user.id != token_row.user_id:
+            self.revoke_refresh_token(old_refresh_token)
+            raise ValueError("User does not exist or token ownership mismatch")
 
         # revoke old and issue new
         self.refresh_token_repository.delete_by_token(old_refresh_token)
