@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from database.orm import User, KakaoUser
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict
 
 class UserRepository:
     def __init__(self, db: Session):
@@ -83,3 +83,41 @@ class UserRepository:
             return user, True
     
     
+    def update_profile(self, user_id: int, *, nickname: Optional[str] = None, intro: Optional[str] = None, profile_photo_key: Optional[str] = None) -> Dict:
+        """
+        Update user's profile fields.
+
+        - Updates `User.intro` when provided
+        - Updates `KakaoUser.nickname` and/or `KakaoUser.profile_photo` when provided
+        - At least one of the fields must be provided by the caller
+        """
+        updated: Dict = {}
+
+
+        if intro is not None:
+            user: Optional[User] = self.db.query(User).filter(User.id == user_id).first()
+            if not user:
+                raise ValueError("User not found")
+            user.intro = intro
+            updated["intro"] = intro
+
+        if nickname is not None or profile_photo_key is not None:
+            kakao_user: Optional[KakaoUser] = self.db.query(KakaoUser).filter(KakaoUser.user_id == user_id).first()
+            if not kakao_user:
+
+                raise ValueError("Kakao user profile not found for this user")
+
+            if nickname is not None:
+                kakao_user.nickname = nickname
+                updated["nickname"] = nickname
+
+            if profile_photo_key is not None:
+                kakao_user.profile_photo = profile_photo_key
+                updated["profile_photo_key"] = profile_photo_key
+
+
+        if updated:
+            self.db.commit()
+        
+        return updated
+
