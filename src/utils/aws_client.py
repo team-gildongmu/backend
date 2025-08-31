@@ -11,8 +11,8 @@ class AWSBotoClient:
     def __init__(self):
         self.secret_key = os.getenv("AWS_SECRET_KEY")
         self.access_key = os.getenv("AWS_ACCESS_KEY")
-        self.bucket_name = "giltongmu"
-        self.region = "ap-northeast-2"
+        self.bucket_name = os.getenv("AWS_S3_BUCKET_NAME", "giltongmu")
+        self.region = os.getenv("AWS_REGION", "ap-northeast-2")
         self.s3 = boto3.client('s3', aws_access_key_id=self.access_key, aws_secret_access_key=self.secret_key, region_name=self.region)
 
     def upload_file(self, folder_name: str, user_id: int, file_name: str, file_obj):
