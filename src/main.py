@@ -4,7 +4,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import text
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from api import user, travel, travel_review
+from api import user, travel, travel_review, profile
 import os
 
 from database.connection import get_db
@@ -29,6 +29,7 @@ app.add_middleware(
 app.include_router(user.router)
 app.include_router(travel.router)
 app.include_router(travel_review.router)
+app.include_router(profile.router)
 
 @app.get("/")
 def read_root():
@@ -40,6 +41,15 @@ def test_db(db: Session = Depends(get_db)):
     # 그냥 커넥션 테스트 쿼리
     db.execute(text("SELECT 1"))
     return {"db_connection": "ok"}
+
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/kakao-login")
+def kakao_login_redirect():
+    """Redirect to the Kakao OAuth HTML page"""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/static/kakao_oauth.html")
 
 
 

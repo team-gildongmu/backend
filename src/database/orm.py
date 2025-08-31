@@ -4,10 +4,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
 from sqlalchemy.sql.sqltypes import Float
+from database.base_entity import BaseEntity
 
 Base = declarative_base()
 
-class User(Base):
+class User(Base, BaseEntity):
     __tablename__ = 'user' #단수형으로 동일시키기.
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(255), unique=True, nullable=False) #first from kakao
@@ -23,7 +24,7 @@ class User(Base):
     kakao = relationship("KakaoUser", back_populates="user", uselist=False, cascade='all, delete-orphan')
 
 
-class KakaoUser(Base):
+class KakaoUser(Base, BaseEntity):
     __tablename__ = 'kakao_user'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False, unique=True)
@@ -31,7 +32,7 @@ class KakaoUser(Base):
     profile_photo = Column(String(255), nullable=True)
     user = relationship("User", back_populates="kakao")
 
-class RefreshToken(Base):
+class RefreshToken(Base, BaseEntity):
     __tablename__ = 'refresh_token'
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False, index=True)
