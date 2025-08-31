@@ -11,3 +11,7 @@ class KakaoLoginResponse(BaseModel):
 class UnlinkResponse(BaseModel):
     success: bool
     message: str
+
+class RefreshTokenResponse(BaseModel):
+    access_token: str
+    email: str
