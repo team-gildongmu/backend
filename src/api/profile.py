@@ -55,4 +55,4 @@ async def edit_profile(
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"Error updating profile: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
