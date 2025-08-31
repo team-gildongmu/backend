@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from schema.request import KakaoLoginRequest, KakaoUnlinkRequest
-from schema.response import KakaoLoginResponse, UnlinkResponse
+from schema.response import KakaoLoginResponse, UnlinkResponse, RefreshTokenResponse
 from service.user_service import UserService
 import os
 import json
 import logging
+from utils.jwt_utils import decode_token, create_access_token
+from utils.auth_util import get_refresh_token_from_cookie
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -109,4 +111,21 @@ def kakao_unlink(request: KakaoUnlinkRequest, db: Session = Depends(get_db)):
         else:
             # Default to 500 for unexpected errors
             raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        
+
+    
+@router.post("/refresh", response_model=RefreshTokenResponse)
+async def refresh_token(refresh_token: str = Depends(get_refresh_token_from_cookie), db: Session = Depends(get_db)):
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="No refresh token")
+
+    user_service = UserService(db)
+    try:
+        result = user_service.refresh_access_token(refresh_token)
+        return RefreshTokenResponse(access_token=result["access_token"], email=result["email"])
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+
 

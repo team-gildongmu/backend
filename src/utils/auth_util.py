@@ -17,3 +17,10 @@ class JWTBearer(HTTPBearer):
             else:
                 raise HTTPException(status_code=403, detail="Invalid or expired token.")
         raise HTTPException(status_code=403, detail="Invalid authorization code.")
+
+
+async def get_refresh_token_from_cookie(request: Request) -> str | None:
+    cookies = request.cookies
+    if not cookies:
+        return None
+    return cookies.get("refresh-token")
