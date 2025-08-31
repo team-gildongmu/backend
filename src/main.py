@@ -43,13 +43,6 @@ def test_db(db: Session = Depends(get_db)):
     return {"db_connection": "ok"}
 
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-@app.get("/kakao-login")
-def kakao_login_redirect():
-    """Redirect to the Kakao OAuth HTML page"""
-    from fastapi.responses import RedirectResponse
-    return RedirectResponse(url="/static/kakao_oauth.html")
 
 
 
