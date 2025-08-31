@@ -17,9 +17,8 @@ class TravelReview(Base, BaseEntity) :
     ai_rating = Column(Float, nullable=False)
     started_at = Column(String(256), nullable=False)
     finished_at = Column(String(256), nullable=False)
-    weather = Column(String(256), nullable=False) #추후 enum으로 관리
-    mood = Column(String(256), nullable=False)  #추후 enum으로 관리
-    tag = Column(String(256), nullable=False) #여러개 선택 가능한지 확인
+    weather = Column(String(256), nullable=False) #enum
+    mood = Column(Float, nullable=False)
     note = Column(Text, nullable=False)
     song = Column(String(256), nullable=False) #추후 논의 필요
 
@@ -33,9 +32,8 @@ class TravelReview(Base, BaseEntity) :
             ai_rating=request.ai_rating,
             started_at=request.started_at,
             finished_at=request.finished_at,
-            weather=request.weather,
+            weather=request.weather.name,
             mood=request.mood,
-            tag=request.tag,
             note=request.note,
             song=request.song,
         )
