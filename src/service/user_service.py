@@ -10,6 +10,7 @@ from typing import Dict, Optional
 from fastapi import UploadFile
 from datetime import datetime
 import uuid
+from schema.profile_response import ProfileResponse
 
 logger = logging.getLogger(__name__)
 
@@ -154,4 +155,15 @@ class UserService:
             updated["profile_photo_url"] = profile_photo_url
 
         return updated
+    
+    def get_profile(self, user_id: int) -> Dict:
+        data = self.user_repository.get_profile(user_id)
+        temp_img_url = self.s3_client.get_file(data.profile_photo_key)
+        return ProfileResponse(
+            nickname=data.nickname,
+            email=data.email,
+            intro=data.intro,
+            profile_photo_url=temp_img_url if temp_img_url else None
+        )
+
 

@@ -5,14 +5,18 @@ from service.user_service import UserService
 from utils.auth_util import JWTBearer
 from typing import Optional
 import logging
-
+from schema.profile_response import ProfileResponse
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/profile")
 
-@router.patch("/edit")
+@router.patch("/edit", responses={
+    200: {"description": "Profile updated successfully"},
+    400: {"description": "Invalid request"},
+    500: {"description": "Internal server error"}
+})
 async def edit_profile(
     nickname: Optional[str] = Form(None),
     intro: Optional[str] = Form(None),
@@ -55,4 +59,24 @@ async def edit_profile(
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"Error updating profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    
+
+@router.get("/me", response_model=ProfileResponse, responses={
+    200: {"description": "Profile retrieved successfully"},
+    400: {"description": "Invalid request"},
+    500: {"description": "Internal server error"}
+})
+async def get_profile(
+    current_user = Depends(JWTBearer()),
+    db: Session = Depends(get_db),
+    
+):
+    try:
+        user_id = int(current_user["user_id"])
+        user_service = UserService(db)
+        return user_service.get_profile(user_id)
+        
+    except Exception as e:
+        logger.error(f"Error getting profile: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
