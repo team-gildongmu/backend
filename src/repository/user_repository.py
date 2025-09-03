@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import joinedload
 from database.orm import User, KakaoUser
 from typing import Optional, Tuple, Dict
+from models.profile import ProfileData
 
 class UserRepository:
     def __init__(self, db: Session):
@@ -13,6 +15,11 @@ class UserRepository:
     def find_by_kakao_id(self, kakao_id: int) -> Optional[User]:
         """Find user by Kakao ID"""
         return self.db.query(User).join(KakaoUser).filter(KakaoUser.id == kakao_id).first()
+
+    
+    def find_kakao_by_user_id(self, user_id: int) -> Optional[KakaoUser]:
+        """Return KakaoUser row for a given User.id"""
+        return self.db.query(KakaoUser).filter(KakaoUser.user_id == user_id).first()
     
     def create_kakao_user(self, kakao_profile: dict) -> User:
         """Create new user from Kakao profile"""
@@ -120,4 +127,16 @@ class UserRepository:
             self.db.commit()
         
         return updated
+    
+    def get_profile(self, user_id: int) -> ProfileData:
+        user = self.db.query(User).options(joinedload(User.kakao)).filter(User.id == user_id).first()
+        if not user or not user.kakao:
+            raise ValueError(f"User profile not found for user id {user_id}")
+
+        return ProfileData(
+            nickname=user.kakao.nickname,
+            email=user.email,
+            intro=user.intro,
+            profile_photo_key=user.kakao.profile_photo)
+    
 
