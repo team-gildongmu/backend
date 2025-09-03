@@ -156,14 +156,14 @@ class UserService:
 
         return updated
     
-    def get_profile(self, user_id: int) -> Dict:
+    def get_profile(self, user_id: int) -> ProfileResponse:
         data = self.user_repository.get_profile(user_id)
-        temp_img_url = self.s3_client.get_file(data.profile_photo_key)
+        temp_img_url = self.s3_client.get_file(data.profile_photo_key) if data.profile_photo_key else None
         return ProfileResponse(
             nickname=data.nickname,
             email=data.email,
             intro=data.intro,
-            profile_photo_url=temp_img_url if temp_img_url else None
+            profile_photo_url=temp_img_url
         )
 
 
