@@ -129,12 +129,14 @@ class UserRepository:
         return updated
     
     def get_profile(self, user_id: int) -> ProfileData:
-        user = self.db.query(User).filter(User.id == user_id).first()
-        kakao_user = self.find_kakao_by_user_id(user_id)
+        user = self.db.query(User).options(joinedload(User.kakao)).filter(User.id == user_id).first()
+        if not user or not user.kakao:
+            raise ValueError(f"User profile not found for user id {user_id}")
+
         return ProfileData(
-            nickname=kakao_user.nickname,
+            nickname=user.kakao.nickname,
             email=user.email,
             intro=user.intro,
-            profile_photo_key=kakao_user.profile_photo)
+            profile_photo_key=user.kakao.profile_photo)
     
 
