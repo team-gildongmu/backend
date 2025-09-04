@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List
-
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 
 
@@ -50,6 +50,7 @@ class TravelReviewCreateRequest(BaseModel):
     finished_at: str
     weather: Weather
     mood: float
+    picture: List[UploadFile] #url
     tag: List[ReviewTag]
     note: str
     song: str
