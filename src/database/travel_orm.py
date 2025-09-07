@@ -13,6 +13,7 @@ class TravelLog(Base, BaseEntity):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     title = Column(String(256), nullable=False)
     summary = Column(Text, nullable=False)
+    theme = Column(String(256), nullable=False)
     user_id = Column(Integer, ForeignKey("user.id"))
 
     @classmethod
@@ -20,6 +21,7 @@ class TravelLog(Base, BaseEntity):
         return cls(
             title=request.title,
             summary=request.summary,
+            theme=request.theme,
             user_id=user_id,
         )
 

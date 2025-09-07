@@ -31,3 +31,4 @@ class TravelLogCreateRequest(BaseModel):
     days: List[DayPlanCreateRequest]  # 일자별 여행지 리스트
     stays: List[StayCreateRequest]  # 숙소 리스트
     summary: str  # 전체 여행 요약
+    theme: str

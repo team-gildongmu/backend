@@ -7,7 +7,12 @@ class TravelLogRepository:
         self.session = session
 
     def create_travel_log(self, travelLog: TravelLog) -> TravelLog:
-        self.session.add(instance=travelLog)
-        self.session.flush()
-        self.session.refresh(instance=travelLog) # db read
-        return travelLog
+        try:
+            self.session.add(instance=travelLog)
+            self.session.flush()
+            self.session.refresh(instance=travelLog) # db read
+            return travelLog
+        except Exception as e:
+            print(f"Repository에서 에러: {e}")
+            self.session.rollback()
+            raise
