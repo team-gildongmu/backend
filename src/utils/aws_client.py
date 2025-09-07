@@ -1,3 +1,5 @@
+from io import BytesIO
+import requests
 import boto3
 import logging
 from botocore.exceptions import ClientError
@@ -14,6 +16,14 @@ class AWSBotoClient:
         self.bucket_name = os.getenv("AWS_S3_BUCKET_NAME", "giltongmu")
         self.region = os.getenv("AWS_REGION", "ap-northeast-2")
         self.s3 = boto3.client('s3', aws_access_key_id=self.access_key, aws_secret_access_key=self.secret_key, region_name=self.region)
+
+    def upload_file_from_url(self, folder_name: str, user_id: int, file_name: str, url: str):
+        response = requests.get(url)
+        response.raise_for_status()
+
+        file_obj = BytesIO(response.content)
+
+        self.upload_file(folder_name, user_id, file_name, file_obj)
 
     def upload_file(self, folder_name: str, user_id: int, file_name: str, file_obj):
         self.s3.upload_fileobj(file_obj, self.bucket_name, f"{folder_name}/{user_id}/{file_name}")
