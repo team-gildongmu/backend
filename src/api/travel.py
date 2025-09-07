@@ -5,6 +5,8 @@ from schema.travel_request import TravelLogCreateRequest
 from schema.travel_response import TravelLogCreateResponse
 from service.travel_service import TravelLogService
 from utils.auth_util import JWTBearer
+from fastapi import Body
+from datetime import datetime
 from schema.stamp_response import StampListResponse, StampResponse
 
 router = APIRouter(prefix="/travel")
@@ -68,3 +70,26 @@ def get_users_stamps(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+@router.patch(
+    "/stamp/{stamp_id}/mark-completed",
+    response_model=StampResponse,
+    responses={
+        200: {"description": "Stamp marked as completed"},
+        500: {"description": "Internal server error"}
+    }
+)
+def mark_stamp_completed(
+    stamp_id: int,
+    stamped_at: datetime | None = Body(default=None),
+    current_user: dict = Depends(JWTBearer()),
+    session: Session = Depends(get_db)
+):
+    try:
+        user_id = int(current_user["user_id"])
+    except (KeyError, ValueError, TypeError):
+        raise HTTPException(status_code=403, detail="Invalid or expired token.")
+
+    travel_log_service = TravelLogService(session)
+    stamp = travel_log_service.update_stamp_completed(user_id, stamp_id, stamped_at)
+
+    return StampResponse.model_validate(stamp)

@@ -1,4 +1,5 @@
 from sqlalchemy.orm.session import Session
+from datetime import datetime
 from typing import List
 from database.travel_orm import TravelLog, TravelLocation, TravelStamp
 from repository.travel_location_repository import TravelLocationRepository
@@ -32,3 +33,9 @@ class TravelLogService:
 
     def get_travel_stamps(self, user_id: int) -> List[TravelStamp]:
         return self.travel_stamp_repo.find_by_user(user_id)
+
+    def update_stamp_completed(self, user_id: int, stamp_id: int, stamped_at: datetime | None = None) -> TravelStamp:
+        try:
+            return self.travel_stamp_repo.update_stamp_completed(user_id, stamp_id, stamped_at)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
