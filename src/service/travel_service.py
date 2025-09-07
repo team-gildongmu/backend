@@ -41,7 +41,9 @@ class TravelLogService:
 
             self.travel_log_tag_repo.create_travel_log_tags(travel_log_tags)
 
-            for day in request.days:  # day는 DayPlanCreateRequest
+            travel_day = 0
+            for day in request.days:
+                travel_day += 1
                 for location in day.segments:
                     url = location.image or "upload"
                     _, dot, ext = url.rpartition('.')
@@ -56,7 +58,7 @@ class TravelLogService:
                     self.s3_client.upload_file_from_url(folder_name, user_id, file_name, url)
                     uploaded_file_names.append(location_image_key)
 
-                    travel_location = TravelLocation.create(location, saved_travel_log.id, user_id, location_image_key)
+                    travel_location = TravelLocation.create(location, saved_travel_log.id, user_id, location_image_key, travel_day)
                     saved_travel_location = self.travel_location_repo.create_travel_location(travel_location)
 
                     travel_stamp = TravelStamp.create_stamp(saved_travel_log, saved_travel_location)
@@ -84,5 +86,4 @@ class TravelLogService:
         except Exception as e:
             for file_name in uploaded_file_names:
                 self.s3_client.delete_file(file_name);
-                return None
             return None

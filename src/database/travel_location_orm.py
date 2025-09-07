@@ -18,12 +18,13 @@ class TravelLocation(Base, BaseEntity) :
     description = Column(Text, nullable=False)
     reason = Column(Text, nullable=False)
     image_link = Column(String(256))
+    travel_day = Column(Integer)
 
     sequence = Column(Integer)
     congestion = Column(String(256))
 
     @classmethod
-    def create(cls, request: TravelLocationCreateRequest, travel_log_id: int, user_id: int, image_link: str) -> "TravelLocation":
+    def create(cls, request: TravelLocationCreateRequest, travel_log_id: int, user_id: int, image_link: str, travel_day: int) -> "TravelLocation":
         return cls(
             title=request.title,
             longitude=float(request.coords.mapx),
@@ -33,7 +34,8 @@ class TravelLocation(Base, BaseEntity) :
             reason=request.reason,
             travel_log_id=travel_log_id,
             user_id=user_id,
-            image_link=image_link
+            image_link=image_link,
+            travel_day=travel_day
 
             # sequence=request.sequence,
             # congestion=request.congestion,
