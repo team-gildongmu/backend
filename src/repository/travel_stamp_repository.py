@@ -1,4 +1,5 @@
 from database.travel_orm import TravelStamp
+from typing import List 
 
 
 class TravelStampRepository:
@@ -11,3 +12,8 @@ class TravelStampRepository:
         for stamp in travel_stamps:
             self.session.refresh(stamp)
         return travel_stamps
+
+    def find_by_user(self, user_id: int) -> List[TravelStamp]:
+        return self.session.query(TravelStamp).filter(
+            TravelStamp.user_id == user_id
+        ).all()

@@ -5,6 +5,7 @@ from schema.travel_request import TravelLogCreateRequest
 from schema.travel_response import TravelLogCreateResponse
 from service.travel_service import TravelLogService
 from utils.auth_util import JWTBearer
+from schema.stamp_response import StampListResponse, StampResponse
 
 router = APIRouter(prefix="/travel")
 
@@ -34,3 +35,36 @@ def create_travel_log_handler(
         return TravelLogCreateResponse.model_validate(saved_travel_log)
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get(
+    "/my_stamps",
+    response_model=StampListResponse,
+    responses={
+        200: {"description": "Retrieved stamps list"},
+        500: {"description": "Internal server error"}
+    }
+)
+def get_users_stamps(
+    session: Session = Depends(get_db),
+    current_user: dict = Depends(JWTBearer())
+):
+    try:
+        user_id = int(current_user["user_id"])
+        travel_log_service = TravelLogService(session)
+        stamps = travel_log_service.get_travel_stamps(user_id)
+        stamp_responses = [
+            StampResponse(
+                id=stamp.id,
+                title=stamp.title,  
+                is_stamped=stamp.is_stamped,   
+                stamped_at=stamp.stamped_at if stamp.stamped_at else None
+            ) for stamp in stamps
+        ]
+        
+        return StampListResponse(stamps=stamp_responses)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+

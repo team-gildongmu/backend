@@ -1,5 +1,5 @@
 from sqlalchemy.orm.session import Session
-
+from typing import List
 from database.travel_orm import TravelLog, TravelLocation, TravelStamp
 from repository.travel_location_repository import TravelLocationRepository
 from repository.travel_log_repository import TravelLogRepository
@@ -28,3 +28,7 @@ class TravelLogService:
         self.travel_stamp_repo.create_travel_stamps(travel_stamps)
 
         return saved_travel_log
+
+
+    def get_travel_stamps(self, user_id: int) -> List[TravelStamp]:
+        return self.travel_stamp_repo.find_by_user(user_id)
