@@ -3,7 +3,8 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy.orm.session import Session
-
+from datetime import datetime
+from typing import List
 from database.travel_location_orm import TravelLocation
 from database.travel_orm import TravelLog, TravelStamp, TravelLogTag
 from database.travel_stay_orm import TravelStay
@@ -82,8 +83,18 @@ class TravelLogService:
                 self.travel_stay_repo.create_travel_stay(travel_stay)
 
             return saved_travel_log
-
+        
         except Exception as e:
             for file_name in uploaded_file_names:
                 self.s3_client.delete_file(file_name);
             return None
+
+
+    def get_travel_stamps(self, user_id: int) -> List[TravelStamp]:
+        return self.travel_stamp_repo.find_by_user(user_id)
+
+    def update_stamp_completed(self, user_id: int, stamp_id: int, stamped_at: datetime | None = None) -> TravelStamp:
+        try:
+            return self.travel_stamp_repo.update_stamp_completed(user_id, stamp_id, stamped_at)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))

@@ -5,6 +5,7 @@ from sqlalchemy.sql.sqltypes import Float, Boolean
 from database.base_entity import BaseEntity
 from database.orm import Base
 from schema.travel_request import TravelLocationCreateRequest
+from sqlalchemy.orm import relationship
 
 class TravelLocation(Base, BaseEntity) :
     __tablename__ = "travel_location"
@@ -22,6 +23,8 @@ class TravelLocation(Base, BaseEntity) :
 
     sequence = Column(Integer)
     congestion = Column(String(256))
+
+    stamps = relationship("TravelStamp", back_populates="location")
 
     @classmethod
     def create(cls, request: TravelLocationCreateRequest, travel_log_id: int, user_id: int, image_link: str, travel_day: int) -> "TravelLocation":

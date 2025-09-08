@@ -6,7 +6,7 @@ from database.base_entity import BaseEntity
 from database.orm import Base
 from database.travel_location_orm import TravelLocation
 from schema.travel_request import TravelLogCreateRequest
-
+from sqlalchemy.orm import relationship
 
 class TravelLog(Base, BaseEntity):
     __tablename__ = "travel_log"
@@ -48,8 +48,11 @@ class TravelStamp(Base, BaseEntity) :
     travel_location_id = Column(Integer, ForeignKey("travel_location.id"))
     user_id = Column(Integer, ForeignKey("user.id"))
     title = Column(String(256), nullable=False)
-    is_stamped = Column(Boolean, nullable=False)
+    is_stamped = Column(Boolean, nullable=False, default=False)
     stamped_at = Column(DateTime, nullable=False)
+
+
+    location = relationship("TravelLocation", back_populates="stamps")
 
     @classmethod
     def create_stamp(cls, travel_log: TravelLog, travel_location: TravelLocation) -> "TravelStamp":
@@ -58,6 +61,7 @@ class TravelStamp(Base, BaseEntity) :
             travel_log_id=travel_log.id,
             travel_location_id=travel_location.id,
             user_id=travel_log.user_id,
+            is_stamped=False
         )
 
     @classmethod
@@ -68,6 +72,7 @@ class TravelStamp(Base, BaseEntity) :
                 travel_log_id=travel_log.id,
                 travel_location_id=location.id,
                 user_id=travel_log.user_id,
+                is_stamped=False
             )
             for location in travel_locations
         ]
