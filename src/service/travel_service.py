@@ -83,6 +83,12 @@ class TravelLogService:
                 self.travel_stay_repo.create_travel_stay(travel_stay)
 
             return saved_travel_log
+        
+        except Exception as e:
+            for file_name in uploaded_file_names:
+                self.s3_client.delete_file(file_name);
+            return None
+
 
     def get_travel_stamps(self, user_id: int) -> List[TravelStamp]:
         return self.travel_stamp_repo.find_by_user(user_id)
