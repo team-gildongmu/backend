@@ -8,6 +8,8 @@ class StampResponse(BaseModel):
     title: str
     is_stamped: bool
     stamped_at: Optional[datetime] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 class StampListResponse(BaseModel):

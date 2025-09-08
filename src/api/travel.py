@@ -60,7 +60,9 @@ def get_users_stamps(
                 id=stamp.id,
                 title=stamp.title,  
                 is_stamped=stamp.is_stamped,   
-                stamped_at=stamp.stamped_at if stamp.stamped_at else None
+                stamped_at=stamp.stamped_at if stamp.stamped_at else None,
+                latitude=stamp.location.latitude,
+                longitude=stamp.location.longitude
             ) for stamp in stamps
         ]
         

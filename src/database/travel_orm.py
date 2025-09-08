@@ -5,7 +5,7 @@ from sqlalchemy.sql.sqltypes import Float, Boolean
 from database.base_entity import BaseEntity
 from database.orm import Base
 from schema.travel_request import TravelLogCreateRequest, TravelLocationCreateRequest
-
+from sqlalchemy.orm import relationship
 
 class TravelLog(Base, BaseEntity):
     __tablename__ = "travel_log"
@@ -32,6 +32,8 @@ class TravelLocation(Base, BaseEntity) :
     latitude = Column(Float, nullable=False)
     congestion = Column(String(256), nullable=False)
 
+    stamps = relationship("TravelStamp", back_populates="location")
+
     @classmethod
     def create(cls, request: TravelLocationCreateRequest, travel_log: TravelLog) -> "TravelLocation":
         return cls(
@@ -54,6 +56,8 @@ class TravelStamp(Base, BaseEntity) :
     title = Column(String(256), nullable=False)
     is_stamped = Column(Boolean, nullable=False)
     stamped_at = Column(DateTime, nullable=False)
+
+    location = relationship("TravelLocation", back_populates="stamps")
 
     @classmethod
     def create_stamps(cls, travel_log: TravelLog, travel_locations: List[TravelLocation]) -> List["TravelStamp"]:

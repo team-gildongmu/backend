@@ -8,6 +8,7 @@ from repository.travel_stamp_repository import TravelStampRepository
 from schema.travel_request import TravelLogCreateRequest
 
 
+
 class TravelLogService:
     def __init__(self, session: Session):
         self.session = session
