@@ -1,5 +1,7 @@
+import os
 import uuid
 from datetime import datetime
+from http.client import HTTPException
 from typing import Optional
 
 from sqlalchemy.orm.session import Session
@@ -53,3 +55,18 @@ class TravelReviewService:
             self.travel_review_photo_repo.create_travel_review(travel_review_photo)
 
         return saved_travel_review
+
+    def delete_travel_review(self, travel_review_id: int):
+        travel_review: TravelReview | None = self.travel_review_repo.get_review_by_review_id(travel_review_id)
+        if not travel_review:
+            raise Exception("Travel Review Not Found")
+
+        review_photos = self.travel_review_photo_repo.get_review_photo_by_review_id(review_id=travel_review_id)
+        for photo in review_photos or []:
+            file_name = os.path.basename(photo.review_photo_link)
+            self.s3_client.delete_file(photo.review_photo_link)
+
+        self.travel_review_photo_repo.delete_review_photo(travel_review_id)
+        self.travel_review_tag_repo.delete_review_tag(travel_review_id)
+
+        self.travel_review_repo.delete_review(travel_review_id)
