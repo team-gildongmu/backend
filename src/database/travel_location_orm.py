@@ -5,6 +5,7 @@ from sqlalchemy.sql.sqltypes import Float, Boolean
 from database.base_entity import BaseEntity
 from database.orm import Base
 from schema.travel_request import TravelLocationCreateRequest
+from sqlalchemy.orm import relationship
 
 class TravelLocation(Base, BaseEntity) :
     __tablename__ = "travel_location"

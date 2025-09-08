@@ -48,7 +48,7 @@ class TravelStamp(Base, BaseEntity) :
     travel_location_id = Column(Integer, ForeignKey("travel_location.id"))
     user_id = Column(Integer, ForeignKey("user.id"))
     title = Column(String(256), nullable=False)
-    is_stamped = Column(Boolean, nullable=False)
+    is_stamped = Column(Boolean, nullable=False, default=False)
     stamped_at = Column(DateTime, nullable=False)
 
 
@@ -61,6 +61,7 @@ class TravelStamp(Base, BaseEntity) :
             travel_log_id=travel_log.id,
             travel_location_id=travel_location.id,
             user_id=travel_log.user_id,
+            is_stamped=False
         )
 
     @classmethod
@@ -71,6 +72,7 @@ class TravelStamp(Base, BaseEntity) :
                 travel_log_id=travel_log.id,
                 travel_location_id=location.id,
                 user_id=travel_log.user_id,
+                is_stamped=False
             )
             for location in travel_locations
         ]

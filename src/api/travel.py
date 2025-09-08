@@ -8,6 +8,7 @@ from utils.auth_util import JWTBearer
 from fastapi import Body
 from datetime import datetime
 from schema.stamp_response import StampListResponse, StampResponse
+from typing import Optional
 
 router = APIRouter(prefix="/travel")
 
@@ -82,7 +83,7 @@ def get_users_stamps(
 )
 def mark_stamp_completed(
     stamp_id: int,
-    stamped_at: datetime | None = Body(default=None),
+    stamped_at: Optional[datetime] = Body(default=None, embed=True),
     current_user: dict = Depends(JWTBearer()),
     session: Session = Depends(get_db)
 ):
@@ -94,4 +95,11 @@ def mark_stamp_completed(
     travel_log_service = TravelLogService(session)
     stamp = travel_log_service.update_stamp_completed(user_id, stamp_id, stamped_at)
 
-    return StampResponse.model_validate(stamp)
+    return StampResponse(
+        id=stamp.id,
+        title=stamp.title,
+        is_stamped=stamp.is_stamped,
+        stamped_at=stamp.stamped_at,
+        latitude=stamp.location.latitude if stamp.location else None,
+        longitude=stamp.location.longitude if stamp.location else None
+    )

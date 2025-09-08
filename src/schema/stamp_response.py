@@ -6,7 +6,7 @@ from datetime import datetime
 class StampResponse(BaseModel):
     id: int
     title: str
-    is_stamped: bool
+    is_stamped: bool = False
     stamped_at: Optional[datetime] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
