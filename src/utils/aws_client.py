@@ -1,3 +1,4 @@
+from http.client import responses
 from io import BytesIO
 import requests
 import boto3
@@ -41,5 +42,5 @@ class AWSBotoClient:
 
         return link
 
-    def delete_file(self, file_name: str):
-        self.s3.delete_object(Bucket=self.bucket_name, Key=file_name)
+    def delete_file(self, file_key: str):
+        response = self.s3.delete_object(Bucket=self.bucket_name, Key=file_key)
