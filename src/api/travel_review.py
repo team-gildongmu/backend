@@ -108,3 +108,30 @@ async def create_travel_review_handler(
     except Exception as e:
         logging.exception("create_travel_review_handler failed")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.delete(
+    "/review/{review_id}",
+    status_code=204,
+    responses={
+        200: {"description": "Travel review deleted"},
+        500: {"description": "Internal server error"}
+    }
+)
+def delete_travel_review_handler(
+        review_id: int,
+        session: Session = Depends(get_db),
+        payload: dict = Depends(JWTBearer()),
+):
+    try:
+        try:
+            user_id = int(payload["user_id"])
+        except (KeyError, ValueError, TypeError):
+            raise HTTPException(status_code=403, detail="Invalid or expired token.")
+
+        service = TravelReviewService(session)
+        service.delete_travel_review(travel_review_id=review_id)
+
+    except Exception as e:
+        logging.exception("delete_travel_review_handler failed")
+        raise HTTPException(status_code=500, detail="Internal Server Error")

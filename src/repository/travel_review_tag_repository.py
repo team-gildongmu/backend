@@ -1,4 +1,5 @@
 from database.travel_review_tag_orm import TravelReviewTag
+from sqlalchemy import select, delete
 
 
 class TravelReviewTagRepository:
@@ -11,3 +12,7 @@ class TravelReviewTagRepository:
         for tag in travel_review_tags:
             self.session.refresh(tag)
         return travel_review_tags
+
+    def delete_review_tag(self, review_id: int) -> None:
+        self.session.execute(delete(TravelReviewTag).where(TravelReviewTag.travel_review_id == review_id))
+        self.session.commit()
