@@ -1,6 +1,7 @@
 import json
 import uuid
 from datetime import datetime
+import os
 
 from sqlalchemy.orm.session import Session
 from datetime import datetime
@@ -15,6 +16,8 @@ from repository.travel_stamp_repository import TravelStampRepository
 from repository.travel_stay_repository import TravelStayRepository
 from schema.travel_request import TravelLogCreateRequest
 from utils.aws_client import AWSBotoClient
+from utils.calc_utils import haversine
+from schema.stamp_response import CollectableStamp
 
 
 class TravelLogService:
@@ -26,6 +29,7 @@ class TravelLogService:
         self.travel_stay_repo = TravelStayRepository(session)
         self.travel_stamp_repo = TravelStampRepository(session)
         self.s3_client = AWSBotoClient()
+        self.radius_km = float(os.getenv("STAMP_RADIUS_KM", 2))
 
     def create_travel_log(self, request: TravelLogCreateRequest, user_id: int):
 
@@ -98,3 +102,27 @@ class TravelLogService:
             return self.travel_stamp_repo.update_stamp_completed(user_id, stamp_id, stamped_at)
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e))
+
+    
+    def get_collectable_stamps(self, user_id: int, user_lat: float, user_lon: float) -> List[CollectableStamp]:
+        RADIUS_KM = 2
+        stamps = self.travel_stamp_repo.find_unstamped_by_user(user_id)
+
+        nearby_stamps: List[CollectableStamp] = []
+        for stamp in stamps:
+            loc = stamp.location
+            if loc and loc.latitude and loc.longitude:
+                dist = haversine(user_lat, user_lon, loc.latitude, loc.longitude)
+                if dist <= RADIUS_KM:
+                    nearby_stamps.append(
+                    CollectableStamp(
+                        id=stamp.id,
+                        title=loc.title,
+                        latitude=loc.latitude,
+                        longitude=loc.longitude,
+                        distance_km=round(dist, 2)
+                    )
+                )
+                  
+
+        return nearby_stamps

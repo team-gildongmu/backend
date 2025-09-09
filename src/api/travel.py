@@ -7,7 +7,7 @@ from service.travel_service import TravelLogService
 from utils.auth_util import JWTBearer
 from fastapi import Body
 from datetime import datetime
-from schema.stamp_response import StampListResponse, StampResponse
+from schema.stamp_response import StampListResponse, StampResponse, CollectableStampResponse
 from typing import Optional
 
 router = APIRouter(prefix="/travel")
@@ -103,3 +103,27 @@ def mark_stamp_completed(
         latitude=stamp.location.latitude if stamp.location else None,
         longitude=stamp.location.longitude if stamp.location else None
     )
+
+
+@router.get(
+    "/stamp/collectable",
+    response_model=CollectableStampResponse,
+    responses={
+        200: {"description": "Retrieved distance"},
+        500: {"description": "Internal server error"}
+    }
+)
+def get_collectable_stamps(
+    latitude: float = Body(..., embed=True),
+    longitude: float = Body(..., embed=True),
+    current_user: dict = Depends(JWTBearer()),
+    session: Session = Depends(get_db)
+):
+    try:
+        user_id = int(current_user["user_id"])
+        travel_log_service = TravelLogService(session)
+        stamps = travel_log_service.get_collectable_stamps(user_id, latitude, longitude)
+        return CollectableStampResponse(
+            stamps=stamps)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
