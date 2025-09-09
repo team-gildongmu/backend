@@ -105,7 +105,6 @@ class TravelLogService:
 
     
     def get_collectable_stamps(self, user_id: int, user_lat: float, user_lon: float) -> List[CollectableStamp]:
-        RADIUS_KM = 2
         stamps = self.travel_stamp_repo.find_unstamped_by_user(user_id)
 
         nearby_stamps: List[CollectableStamp] = []
@@ -113,7 +112,7 @@ class TravelLogService:
             loc = stamp.location
             if loc and loc.latitude and loc.longitude:
                 dist = haversine(user_lat, user_lon, loc.latitude, loc.longitude)
-                if dist <= RADIUS_KM:
+                if dist <= self.radius_km:
                     nearby_stamps.append(
                     CollectableStamp(
                         id=stamp.id,
