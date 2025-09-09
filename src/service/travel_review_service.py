@@ -2,7 +2,7 @@ import os
 import uuid
 from datetime import datetime
 from http.client import HTTPException
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy.orm.session import Session
 from database.travel_review_orm import TravelReview
@@ -11,7 +11,8 @@ from database.travel_review_tag_orm import TravelReviewTag
 from repository.travel_review_photo_repository import TravelReviewPhotoRepository
 from repository.travel_review_repository import TravelReviewRepository
 from repository.travel_review_tag_repository import TravelReviewTagRepository
-from schema.travel_review_request import TravelReviewCreateRequest
+from schema.travel_review_request import TravelReviewCreateRequest, WEATHER_LABELS, REVIEW_TAG_LABELS
+from schema.travel_review_response import TravelReviewListResponse, TravelReviewCalendarResponse, TravelReviewResponse
 from utils.aws_client import AWSBotoClient
 
 
@@ -70,3 +71,69 @@ class TravelReviewService:
         self.travel_review_tag_repo.delete_review_tag(travel_review_id)
 
         self.travel_review_repo.delete_review(travel_review_id)
+
+    def get_travel_review(self, travel_review_id: int) -> TravelReviewResponse:
+        travel_review = self.travel_review_repo.get_review_by_review_id(travel_review_id)
+
+        image_urls = []
+        for photo in travel_review.photos or []:
+            s3_url = self.s3_client.get_file(photo.review_photo_link)
+            image_urls.append(s3_url)
+
+        tags = []
+        for tag in travel_review.tags or []:
+            tags.append(REVIEW_TAG_LABELS.get(tag.tag, tag.tag))
+
+        response= TravelReviewResponse(
+            travel_review_id=travel_review.id,
+            title=travel_review.title,
+            ai_rating=travel_review.ai_rating,
+            start_date=travel_review.started_at,
+            end_date=travel_review.finished_at,
+            weather=WEATHER_LABELS.get(travel_review.weather, travel_review.weather),
+            images=image_urls,
+            tags=tags,
+            mood=travel_review.mood,
+            note=travel_review.note,
+        )
+
+        return response
+
+    def get_travel_review_list(self, user_id: int) -> List[TravelReviewListResponse]:
+        travel_reviews = self.travel_review_repo.get_review_by_user_id(user_id)
+        result = []
+
+        for travel_review in travel_reviews or []:
+            # 각 사진의 S3 URL 생성
+            image_urls = []
+            for photo in travel_review.photos or []:
+                s3_url = self.s3_client.get_file(photo.review_photo_link)
+                image_urls.append(s3_url)
+
+            response_item = TravelReviewListResponse(
+                travel_review_id=travel_review.id,
+                title=travel_review.title,
+                ai_rating=travel_review.ai_rating,
+                start_date=travel_review.started_at,
+                end_date=travel_review.finished_at,
+                weather=WEATHER_LABELS.get(travel_review.weather, travel_review.weather),
+                image=image_urls
+            )
+            result.append(response_item)
+
+        return result
+
+    def get_travel_review_calendar(self, user_id: int) -> List[TravelReviewCalendarResponse]:
+        travel_reviews = self.travel_review_repo.get_review_by_user_id(user_id)
+        result = []
+
+        for travel_review in travel_reviews or []:
+            response_item = TravelReviewCalendarResponse(
+                travel_review_id=travel_review.id,
+                title=travel_review.title,
+                start_date=travel_review.started_at,
+                end_date=travel_review.finished_at,
+            )
+            result.append(response_item)
+
+        return result

@@ -13,6 +13,7 @@ router = APIRouter(prefix="/travel")
 
 # multipart/form-data용
 TagInput = Annotated[Union[List[ReviewTag], List[str], str], Form(...)]
+WeatherInput = Annotated[Weather, Form(...)]
 
 class TravelReviewForm:
     def __init__(
@@ -22,9 +23,9 @@ class TravelReviewForm:
         ai_rating: Annotated[float, Form(...)],
         started_at: Annotated[str, Form(...)],
         finished_at: Annotated[str, Form(...)],
-        weather: Annotated[str, Form(...)],   # 이미 Enum이면 그대로 두세요
+        weather: WeatherInput,
         mood: Annotated[float, Form(...)],
-        tag: TagInput,                        # ← 핵심: 유니온으로 받기
+        tag: TagInput,
         note: Annotated[str, Form(...)],
         song: Annotated[str, Form(...)],
         picture: Annotated[List[UploadFile], File(...)]
@@ -61,8 +62,6 @@ class TravelReviewForm:
         self.note = note
         self.song = song
         self.picture = picture
-
-
 
 @router.post(
     "/review",
@@ -134,4 +133,61 @@ def delete_travel_review_handler(
 
     except Exception as e:
         logging.exception("delete_travel_review_handler failed")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.get("/review", status_code=200)
+def get_travel_review(
+        travel_review_id: int,
+        session: Session = Depends(get_db),
+        payload: dict = Depends(JWTBearer()),
+):
+    try:
+        try:
+            user_id = int(payload["user_id"])
+        except (KeyError, ValueError, TypeError):
+            raise HTTPException(status_code=403, detail="Invalid or expired token.")
+
+        service = TravelReviewService(session)
+        return service.get_travel_review(travel_review_id=travel_review_id)
+
+    except Exception as e:
+        logging.exception("get_travel_review failed")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get("/review/list", status_code=200)
+def get_travel_review_list_handler(
+        session: Session = Depends(get_db),
+        payload: dict = Depends(JWTBearer()),
+):
+    try:
+        try:
+            user_id = int(payload["user_id"])
+        except (KeyError, ValueError, TypeError):
+            raise HTTPException(status_code=403, detail="Invalid or expired token.")
+
+        service = TravelReviewService(session)
+        return service.get_travel_review_list(user_id=user_id)
+
+    except Exception as e:
+        logging.exception("get_travel_review_list_handler failed")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get("/review/calendar", status_code=200)
+def get_travel_review_calendar_handler(
+        session: Session = Depends(get_db),
+        payload: dict = Depends(JWTBearer()),
+):
+    try:
+        try:
+            user_id = int(payload["user_id"])
+        except (KeyError, ValueError, TypeError):
+            raise HTTPException(status_code=403, detail="Invalid or expired token.")
+
+        service = TravelReviewService(session)
+        return service.get_travel_review_calendar(user_id=user_id)
+
+    except Exception as e:
+        logging.exception("get_travel_review_calendar_handler failed")
         raise HTTPException(status_code=500, detail="Internal Server Error")

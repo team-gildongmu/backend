@@ -20,3 +20,7 @@ class TravelReviewPhotoRepository:
     def delete_review_photo(self, review_id: int) -> None:
         self.session.execute(delete(TravelReviewPhoto).where(TravelReviewPhoto.travel_review_id == review_id))
         self.session.commit()
+
+    def get_review_photo_by_user_id(self, user_id: int) -> list[TravelReviewPhoto]:
+        stmt = select(TravelReviewPhoto).where(TravelReviewPhoto.user_id == user_id)
+        return self.session.scalars(stmt).all()
