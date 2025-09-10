@@ -19,6 +19,8 @@ app.add_middleware(
         "http://localhost",
         "http://localhost:3000",
         "http://localhost:3001",
+        "https://localhost:3000",
+        "https://localhost:3001",
         "https://frontend-psi-five-43.vercel.app"
     ],
     allow_credentials=True,
