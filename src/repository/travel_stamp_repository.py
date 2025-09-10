@@ -29,6 +29,17 @@ class TravelStampRepository:
             .filter(TravelStamp.user_id == user_id)
             .all()
         )
+    
+    def find_unstamped_by_user(self, user_id: int) -> List[TravelStamp]:
+        return (
+            self.session.query(TravelStamp)
+            .options(joinedload(TravelStamp.location))
+            .filter(
+                TravelStamp.user_id == user_id,
+                TravelStamp.is_stamped == False
+            )
+            .all()
+        )
 
     def update_stamp_completed(
         self, 
