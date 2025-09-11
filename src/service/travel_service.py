@@ -2,23 +2,24 @@ import json
 import uuid
 from datetime import datetime
 import os
+from unittest import result
 
 from sqlalchemy.orm.session import Session
 from datetime import datetime
 from typing import List
 from database.travel_location_orm import TravelLocation
-from database.travel_orm import TravelLog, TravelStamp, TravelLogTag
+from database.travel_log_orm import TravelLog
+from database.travel_stamp_orm import TravelStamp
 from database.travel_stay_orm import TravelStay
+from database.travel_log_tag_orm import TravelLogTag
 from repository.travel_location_repository import TravelLocationRepository
 from repository.travel_log_repository import TravelLogRepository
 from repository.travel_log_tag_repository import TravelLogTagRepository
 from repository.travel_stamp_repository import TravelStampRepository
 from repository.travel_stay_repository import TravelStayRepository
 from schema.travel_request import TravelLogCreateRequest
+from schema.travel_response import TravelLogListResponse
 from utils.aws_client import AWSBotoClient
-from utils.calc_utils import haversine
-from schema.stamp_response import CollectableStamp
-
 
 class TravelLogService:
     def __init__(self, session: Session):
@@ -92,3 +93,34 @@ class TravelLogService:
             for file_name in uploaded_file_names:
                 self.s3_client.delete_file(file_name);
             return None
+
+    def get_travel_log_list_handler(self, user_id: int):
+        travel_logs = self.travel_log_repo.get_travel_log_by_user_id(user_id)
+        result = []
+
+        try:
+            for travel_log in travel_logs or []:
+                image_urls = []
+                for location in travel_log.locations or []:
+                    s3_url = self.s3_client.get_file(location.image_link)
+                    image_urls.append(s3_url)
+
+                keywords = []
+                for tag in travel_log.tags or []:
+                    keywords.append(tag.tag)
+
+                response_item = TravelLogListResponse(
+                    travel_log_id=travel_log.id,
+                    title=travel_log.title,
+                    subtitle=travel_log.subtitle,
+                    summary=travel_log.summary,
+                    keywords=keywords,
+                    images=image_urls
+                )
+
+                result.append(response_item)
+
+            return result
+
+        except Exception as e:
+            print(e)

@@ -37,3 +37,19 @@ def create_travel_log_handler(
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@router.get("/log/list")
+def get_travel_log_list_handler(
+    session: Session = Depends(get_db),
+    payload: dict = Depends(JWTBearer()),
+):
+    try:
+        try:
+            user_id = int(payload["user_id"])
+        except (KeyError, ValueError, TypeError):
+            raise HTTPException(status_code=403, detail="Invalid or expired token.")
+
+        service = TravelLogService(session)
+        return service.get_travel_log_list_handler(user_id=user_id)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
