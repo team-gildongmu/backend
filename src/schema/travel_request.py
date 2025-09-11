@@ -27,6 +27,7 @@ class StayCreateRequest(BaseModel):
 
 class TravelLogCreateRequest(BaseModel):
     title: str
+    subtitle: str
     keywords: List[str]  # 키워드
     days: List[DayPlanCreateRequest]  # 일자별 여행지 리스트
     stays: List[StayCreateRequest]  # 숙소 리스트

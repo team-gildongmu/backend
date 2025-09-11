@@ -12,6 +12,7 @@ class TravelLog(Base, BaseEntity):
     __tablename__ = "travel_log"
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     title = Column(String(256), nullable=False)
+    subtitle = Column(String(256), nullable=False)
     summary = Column(Text, nullable=False)
     theme = Column(String(256), nullable=False)
     user_id = Column(Integer, ForeignKey("user.id"))
@@ -20,6 +21,7 @@ class TravelLog(Base, BaseEntity):
     def create(cls, request: TravelLogCreateRequest, user_id: int) -> "TravelLog":
         return cls(
             title=request.title,
+            subtitle=request.subtitle,
             summary=request.summary,
             theme=request.theme,
             user_id=user_id,
