@@ -13,7 +13,7 @@ class TravelLogListResponse(BaseModel):
     title: str
     summary: str
     keywords: List[str]
-    locations: List[str]
+    images: List[str]
 
     class Config:
         from_attributes = True
