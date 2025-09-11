@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, Text, Enum, DateTime, ForeignKey
 from sqlalchemy.sql.sqltypes import Float, Boolean
 from database.base_entity import BaseEntity
 from database.orm import Base
-from schema.travel_request import TravelLocationCreateRequest
+from schema.travel_log_request import TravelLocationCreateRequest
 from sqlalchemy.orm import relationship
 
 class TravelLocation(Base, BaseEntity) :

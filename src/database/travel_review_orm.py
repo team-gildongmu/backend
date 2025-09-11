@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import Float, Boolean
 from database.base_entity import BaseEntity
 from database.orm import Base
-from schema.travel_request import TravelLogCreateRequest, TravelLocationCreateRequest
+from schema.travel_log_request import TravelLogCreateRequest, TravelLocationCreateRequest
 from schema.travel_review_request import TravelReviewCreateRequest
 
 

@@ -1,12 +1,9 @@
-import json
 import uuid
-from datetime import datetime
 import os
-from unittest import result
+from collections import defaultdict
 
 from sqlalchemy.orm.session import Session
 from datetime import datetime
-from typing import List
 from database.travel_location_orm import TravelLocation
 from database.travel_log_orm import TravelLog
 from database.travel_stamp_orm import TravelStamp
@@ -17,8 +14,9 @@ from repository.travel_log_repository import TravelLogRepository
 from repository.travel_log_tag_repository import TravelLogTagRepository
 from repository.travel_stamp_repository import TravelStampRepository
 from repository.travel_stay_repository import TravelStayRepository
-from schema.travel_request import TravelLogCreateRequest
-from schema.travel_response import TravelLogListResponse
+from schema.travel_location_response import TravelLocationResponse, TravelLocationMapResponse
+from schema.travel_log_request import TravelLogCreateRequest
+from schema.travel_log_response import TravelLogListResponse, TravelLogResponse, TravelLogMapResponse
 from utils.aws_client import AWSBotoClient
 
 class TravelLogService:
@@ -98,29 +96,84 @@ class TravelLogService:
         travel_logs = self.travel_log_repo.get_travel_log_by_user_id(user_id)
         result = []
 
+        for travel_log in travel_logs or []:
+            image_urls = []
+            for location in travel_log.locations or []:
+                s3_url = self.s3_client.get_file(location.image_link)
+                image_urls.append(s3_url)
+
+            keywords = []
+            for tag in travel_log.tags or []:
+                keywords.append(tag.tag)
+
+            response_item = TravelLogListResponse(
+                travel_log_id=travel_log.id,
+                title=travel_log.title,
+                subtitle=travel_log.subtitle,
+                summary=travel_log.summary,
+                keywords=keywords,
+                images=image_urls
+            )
+
+            result.append(response_item)
+
+        return result
+
+    def get_travel_log_handler(self, travel_log_id:int, user_id: int):
+        travel_log = self.travel_log_repo.get_travel_log_by_log_id(travel_log_id)
+
+        keywords = []
+        for tag in travel_log.tags or []:
+            keywords.append(tag.tag)
+
+        grouped = defaultdict(list)
+
+        for location in travel_log.locations or []:
+            response = TravelLocationResponse(
+                travel_location_id=location.id,
+                title=location.title,
+                longitude=location.longitude,
+                latitude=location.latitude,
+                location_type=location.location_type,
+                description=location.description,
+                travel_day=location.travel_day,
+                image_link=location.image_link,
+            )
+            grouped[location.travel_day].append(response)
+
+        response = TravelLogResponse(
+            travel_log_id=travel_log.id,
+            title=travel_log.title,
+            subtitle=travel_log.subtitle,
+            summary=travel_log.summary,
+            keywords=keywords,
+            locations=grouped,
+        )
+
+        return response
+
+
+    def get_travel_log_map_handler(self, travel_log_id: int, user_id: int):
         try:
-            for travel_log in travel_logs or []:
-                image_urls = []
-                for location in travel_log.locations or []:
-                    s3_url = self.s3_client.get_file(location.image_link)
-                    image_urls.append(s3_url)
+            travel_log = self.travel_log_repo.get_travel_log_by_log_id(travel_log_id)
 
-                keywords = []
-                for tag in travel_log.tags or []:
-                    keywords.append(tag.tag)
+            grouped = defaultdict(list)
 
-                response_item = TravelLogListResponse(
-                    travel_log_id=travel_log.id,
-                    title=travel_log.title,
-                    subtitle=travel_log.subtitle,
-                    summary=travel_log.summary,
-                    keywords=keywords,
-                    images=image_urls
+            for location in travel_log.locations or []:
+                response = TravelLocationMapResponse(
+                    travel_location_id=location.id,
+                    title=location.title,
+                    longitude=location.longitude,
+                    latitude=location.latitude,
+                    location_type=location.location_type,
                 )
+                grouped[location.travel_day].append(response)
 
-                result.append(response_item)
+            response = TravelLogMapResponse(
+                travel_log_id=travel_log.id,
+                locations=grouped,
+            )
 
-            return result
-
+            return response
         except Exception as e:
             print(e)

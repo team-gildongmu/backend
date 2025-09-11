@@ -24,3 +24,6 @@ class TravelLogRepository:
 
     def get_travel_log_by_user_id(self, user_id: int) -> List[TravelLog]:
         return self.session.scalars(select(TravelLog).where(TravelLog.user_id == user_id)).unique().all()
+
+    def get_travel_log_by_log_id(self, travel_log_id: int) -> TravelLog | None:
+        return self.session.scalar(select(TravelLog).where(TravelLog.id == travel_log_id))

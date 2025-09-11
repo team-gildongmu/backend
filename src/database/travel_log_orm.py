@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy import Column, Integer, String, Text, Enum, DateTime, ForeignKey
 from database.base_entity import BaseEntity
 from database.orm import Base
-from schema.travel_request import TravelLogCreateRequest
+from schema.travel_log_request import TravelLogCreateRequest
 from sqlalchemy.orm import relationship
 
 class TravelLog(Base, BaseEntity):
