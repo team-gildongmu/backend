@@ -50,18 +50,6 @@ class UserService:
         except Exception as e:
             logger.error(f"Kakao authentication failed: {str(e)}")
             raise e
-    
-    def unlink_kakao(self, access_token: str) -> Dict:
-        """Unlink user from Kakao"""
-        try:
-            result = self.kakao_client.unlink(access_token)
-            return {
-                "success": True,
-                "message": f"Successfully unlinked Kakao user ID: {result.get('id')}"
-            }
-        except Exception as e:
-            # Re-raise the exception to be handled by the API layer
-            raise e 
 
     def refresh_access_token(self, raw_refresh_token: str) -> Dict:
         """Validate refresh token: verify it exists in DB, then issue a new access token."""
