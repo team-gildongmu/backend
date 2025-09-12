@@ -1,4 +1,4 @@
-from database.travel_orm import TravelLogTag
+from database.travel_log_tag_orm import TravelLogTag
 
 
 class TravelLogTagRepository:

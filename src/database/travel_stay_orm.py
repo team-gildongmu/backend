@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy import Column, Integer, String, Text, Enum, DateTime, ForeignKey
 from sqlalchemy.sql.sqltypes import Float, Boolean
 from database.orm import Base
-from schema.travel_request import StayCreateRequest
+from schema.travel_log_request import StayCreateRequest
 
 class TravelStay(Base):
     __tablename__ = "travel_stay"

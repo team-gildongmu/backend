@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.connection import get_db
-from service.travel_service import TravelLogService
+from service.travel_log_service import TravelLogService
 from service.travel_stamp_service import TravelStampService
 from utils.auth_util import JWTBearer
 from fastapi import Body

@@ -1,10 +1,12 @@
 import uuid
 import os
+from http.client import HTTPException
 
 from sqlalchemy.orm.session import Session
 from datetime import datetime
 from typing import List
-from database.travel_orm import TravelLog, TravelStamp, TravelLogTag
+
+from database.travel_stamp_orm import TravelStamp
 from repository.travel_stamp_repository import TravelStampRepository
 from utils.calc_utils import haversine
 from schema.stamp_response import CollectableStamp

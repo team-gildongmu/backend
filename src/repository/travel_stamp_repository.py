@@ -1,8 +1,9 @@
-from database.travel_orm import TravelStamp
+
 from typing import List 
 from datetime import datetime
 from sqlalchemy.orm import joinedload
 
+from database.travel_stamp_orm import TravelStamp
 
 
 class TravelStampRepository:

@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from database.travel_orm import TravelLocation
+
+from database.travel_location_orm import TravelLocation
 
 
 class TravelLocationRepository:

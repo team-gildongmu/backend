@@ -1,4 +1,3 @@
-from database.travel_orm import TravelStamp
 from database.travel_stay_orm import TravelStay
 
 
