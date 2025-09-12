@@ -44,3 +44,36 @@ class AWSBotoClient:
 
     def delete_file(self, file_key: str):
         response = self.s3.delete_object(Bucket=self.bucket_name, Key=file_key)
+        
+    def delete_user_folder(self, user_id: int):
+        """Delete all S3 files for a user across all folders"""
+        folders = ["profile_pics", "location_pics", "stay_pics", "review_pics"]
+        
+        for folder in folders:
+            prefix = f"{folder}/{user_id}/"
+            
+            try:
+                # List all objects with the prefix
+                response = self.s3.list_objects_v2(
+                    Bucket=self.bucket_name,
+                    Prefix=prefix
+                )
+                
+                if 'Contents' in response:
+                    # Prepare delete request for batch deletion
+                    objects_to_delete = [{'Key': obj['Key']} for obj in response['Contents']]
+                    
+                    if objects_to_delete:
+                        delete_response = self.s3.delete_objects(
+                            Bucket=self.bucket_name,
+                            Delete={'Objects': objects_to_delete}
+                        )
+                        logging.info(f"Deleted {len(objects_to_delete)} files from {prefix}")
+                    else:
+                        logging.info(f"No files found in {prefix}")
+                else:
+                    logging.info(f"No files found in {prefix}")
+                    
+            except ClientError as e:
+                logging.error(f"Error deleting files from {prefix}: {e}")
+                # Don't raise exception - continue with other folders

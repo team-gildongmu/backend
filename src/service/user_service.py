@@ -156,9 +156,16 @@ class UserService:
 
     
     def delete_profile(self, user_id: int) -> None:
+
         try:
+
+            self.s3_client.delete_user_folder(user_id)
             self.user_repository.delete_user_by_id(user_id)
+
         except ValueError as e:
             raise e
+        except Exception as e:
+            logger.error(f"Error deleting profile for user {user_id}: {str(e)}")
+            raise ValueError(f"Failed to delete profile: {str(e)}")
 
 
