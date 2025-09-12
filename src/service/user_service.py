@@ -154,4 +154,11 @@ class UserService:
             profile_photo_url=temp_img_url
         )
 
+    
+    def delete_profile(self, user_id: int) -> None:
+        try:
+            self.user_repository.delete_user_by_id(user_id)
+        except ValueError as e:
+            raise e
+
 

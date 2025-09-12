@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile, Response
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from service.user_service import UserService
@@ -80,3 +80,26 @@ async def get_profile(
     except Exception as e:
         logger.error(f"Error getting profile: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.delete("/delete")
+async def delete_profile(
+    response: Response,
+    current_user: dict = Depends(JWTBearer()),  # extract user ID/email from access token
+    db: Session = Depends(get_db)
+):
+    
+    user_service = UserService(db)
+    user_id = int(current_user["user_id"])
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        user_service.revoke_all_refresh_tokens_for_user(user_id)
+        user_service.delete_profile(user_id)
+        response.delete_cookie(key="refresh-token")
+
+        return {"message": "Profile deleted successfully"}
+    except Exception as e:
+        logger.error(f"Error deleting profile for user {user_id}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")

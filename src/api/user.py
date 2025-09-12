@@ -116,7 +116,7 @@ async def logout(
         if not refresh_token:
             raise HTTPException(status_code=401, detail="No refresh token")
         user_service = UserService(db)
-        user_service.invalidate_refresh_token(refresh_token) 
+        user_service.revoke_refresh_token(refresh_token) 
         response.delete_cookie(key="refresh-token")
         return {"message": "Successfully logged out"}
     except Exception as e:
