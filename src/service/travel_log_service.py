@@ -141,6 +141,8 @@ class TravelLogService:
         grouped = defaultdict(list)
 
         for location in travel_log.locations or []:
+            s3_url = self.s3_client.get_file(location.image_link)
+
             response = TravelLocationResponse(
                 travel_location_id=location.id,
                 title=location.title,
@@ -149,7 +151,7 @@ class TravelLogService:
                 location_type=location.location_type,
                 description=location.description,
                 travel_day=location.travel_day,
-                image_link=location.image_link,
+                image_link=s3_url
             )
             grouped[location.travel_day].append(response)
 
