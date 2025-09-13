@@ -39,8 +39,9 @@ def create_travel_log_handler(
 
 @router.get("/log/list")
 def get_travel_log_list_handler(
-    session: Session = Depends(get_db),
-    payload: dict = Depends(JWTBearer()),
+        theme: str | None = None,
+        session: Session = Depends(get_db),
+        payload: dict = Depends(JWTBearer()),
 ):
     try:
         try:
@@ -49,7 +50,7 @@ def get_travel_log_list_handler(
             raise HTTPException(status_code=403, detail="Invalid or expired token.")
 
         service = TravelLogService(session)
-        return service.get_travel_log_list_handler(user_id=user_id)
+        return service.get_travel_log_list_handler(user_id=user_id, theme=theme)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")

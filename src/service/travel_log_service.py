@@ -92,9 +92,17 @@ class TravelLogService:
                 self.s3_client.delete_file(file_name);
             return None
 
-    def get_travel_log_list_handler(self, user_id: int):
+    def get_travel_log_list_handler(self, user_id: int, theme: str | None = None):
         try:
             travel_logs = self.travel_log_repo.get_travel_log_by_user_id(user_id)
+
+            # theme이 있는 경우 travel_logs를 미리 필터링
+            if theme is not None:
+                travel_logs = [
+                    log for log in (travel_logs or [])
+                    if log.theme == theme
+                ]
+
             result = []
 
             for travel_log in travel_logs or []:
