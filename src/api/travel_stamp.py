@@ -10,7 +10,7 @@ from schema.stamp_response import StampListResponse, StampResponse, CollectableS
 from typing import Optional
 
 
-router = APIRouter(prefix="/travel")
+router = APIRouter(prefix="/stamps")
 
 @router.get(
     "/my_stamps",
@@ -26,6 +26,8 @@ def get_users_stamps(
 ):
     try:
         user_id = int(current_user["user_id"])
+        if not user_id:
+            raise HTTPException(status_code=403, detail="Invalid or expired token.")
         travel_stamp_service = TravelStampService(session)
         stamps = travel_stamp_service.get_travel_stamps(user_id)
         stamp_responses = [
@@ -46,7 +48,7 @@ def get_users_stamps(
 
 
 @router.patch(
-    "/stamp/{stamp_id}/mark-completed",
+    "/{stamp_id}/mark-completed",
     response_model=StampResponse,
     responses={
         200: {"description": "Stamp marked as completed"},
@@ -78,7 +80,7 @@ def mark_stamp_completed(
 
 
 @router.get(
-    "/stamp/collectable",
+    "/collectable",
     response_model=CollectableStampResponse,
     responses={
         200: {"description": "Retrieved distance"},
@@ -93,6 +95,8 @@ def get_collectable_stamps(
 ):
     try:
         user_id = int(current_user["user_id"])
+        if not user_id:
+            raise HTTPException(status_code=403, detail="Invalid or expired token.")
         travel_stamp_service = TravelStampService(session)
         stamps = travel_stamp_service.get_collectable_stamps(user_id, latitude, longitude)
         return CollectableStampResponse(

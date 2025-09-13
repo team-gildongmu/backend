@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -10,7 +10,8 @@ import os
 import json
 import logging
 from utils.jwt_utils import decode_token, create_access_token
-from utils.auth_util import get_refresh_token_from_cookie
+from utils.auth_util import get_refresh_token_from_cookie, JWTBearer
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -79,39 +80,6 @@ async def kakao_callback(request: KakaoLoginRequest, db: Session = Depends(get_d
             detail=f"Internal Server Error: {str(e)}"
         )
 
-@router.post(
-    "/kakao/unlink",
-    response_model=UnlinkResponse,
-    responses={
-        200: {"description": "Successfully unlinked from Kakao"},
-        400: {"description": "Bad request - invalid token"},
-        500: {"description": "Internal server error"}
-    }
-)
-def kakao_unlink(request: KakaoUnlinkRequest, db: Session = Depends(get_db)):
-    """
-    Unlink user from Kakao.
-    
-    - **access_token**: Kakao access token to unlink
-    """
-    try:
-        user_service = UserService(db)
-        result = user_service.unlink_kakao(request.access_token)
-        return UnlinkResponse(**result)
-    except Exception as e:
-        # Log the error for debugging
-        logger.error(f"Error unlinking from Kakao: {str(e)}")
-        
-        # Check if it's a 4xx error (client error) or 5xx error (server error)
-        if hasattr(e, 'response') and hasattr(e.response, 'status_code'):
-            if e.response.status_code >= 400 and e.response.status_code < 500:
-                raise HTTPException(status_code=400, detail=f"Failed to unlink: {str(e)}")
-            else:
-                raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-        else:
-            # Default to 500 for unexpected errors
-            raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
-        
 
     
 @router.post("/refresh", response_model=RefreshTokenResponse)
@@ -125,6 +93,35 @@ async def refresh_token(refresh_token: str = Depends(get_refresh_token_from_cook
         return RefreshTokenResponse(access_token=result["access_token"], email=result["email"])
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
+
+
+
+@router.post(
+    "/logout",
+    responses={
+        200: {"description": "Successfully logged out"},
+        401: {"description": "Unauthorized - no valid session"},
+        500: {"description": "Internal server error"}
+    }
+)
+async def logout(
+    response: Response,
+    db: Session = Depends(get_db),
+    refresh_token: str = Depends(get_refresh_token_from_cookie)
+):
+    """
+    Logout user by deleting refresh token from DB.
+    """
+    try:
+        if not refresh_token:
+            raise HTTPException(status_code=401, detail="No refresh token")
+        user_service = UserService(db)
+        user_service.revoke_refresh_token(refresh_token) 
+        response.delete_cookie(key="refresh-token")
+        return {"message": "Successfully logged out"}
+    except Exception as e:
+        logger.error(f"Error logging out: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 
