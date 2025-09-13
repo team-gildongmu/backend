@@ -93,31 +93,35 @@ class TravelLogService:
             return None
 
     def get_travel_log_list_handler(self, user_id: int):
-        travel_logs = self.travel_log_repo.get_travel_log_by_user_id(user_id)
-        result = []
+        try:
+            travel_logs = self.travel_log_repo.get_travel_log_by_user_id(user_id)
+            result = []
 
-        for travel_log in travel_logs or []:
-            image_urls = []
-            for location in travel_log.locations or []:
-                s3_url = self.s3_client.get_file(location.image_link)
-                image_urls.append(s3_url)
+            for travel_log in travel_logs or []:
+                image_urls = []
+                for location in travel_log.locations or []:
+                    s3_url = self.s3_client.get_file(location.image_link)
+                    image_urls.append(s3_url)
 
-            keywords = []
-            for tag in travel_log.tags or []:
-                keywords.append(tag.tag)
+                keywords = []
+                for tag in travel_log.tags or []:
+                    keywords.append(tag.tag)
 
-            response_item = TravelLogListResponse(
-                travel_log_id=travel_log.id,
-                title=travel_log.title,
-                subtitle=travel_log.subtitle,
-                summary=travel_log.summary,
-                keywords=keywords,
-                images=image_urls
-            )
+                response_item = TravelLogListResponse(
+                    travel_log_id=travel_log.id,
+                    title=travel_log.title,
+                    subtitle=travel_log.subtitle,
+                    summary=travel_log.summary,
+                    keywords=keywords,
+                    images=image_urls
+                )
 
-            result.append(response_item)
+                result.append(response_item)
 
-        return result
+            return result
+
+        except Exception as e:
+            print(e)
 
     def get_travel_log_handler(self, travel_log_id:int, user_id: int):
         travel_log = self.travel_log_repo.get_travel_log_by_log_id(travel_log_id)
