@@ -50,18 +50,6 @@ class UserService:
         except Exception as e:
             logger.error(f"Kakao authentication failed: {str(e)}")
             raise e
-    
-    def unlink_kakao(self, access_token: str) -> Dict:
-        """Unlink user from Kakao"""
-        try:
-            result = self.kakao_client.unlink(access_token)
-            return {
-                "success": True,
-                "message": f"Successfully unlinked Kakao user ID: {result.get('id')}"
-            }
-        except Exception as e:
-            # Re-raise the exception to be handled by the API layer
-            raise e 
 
     def refresh_access_token(self, raw_refresh_token: str) -> Dict:
         """Validate refresh token: verify it exists in DB, then issue a new access token."""
@@ -165,5 +153,19 @@ class UserService:
             intro=data.intro,
             profile_photo_url=temp_img_url
         )
+
+    
+    def delete_profile(self, user_id: int) -> None:
+
+        try:
+
+            self.s3_client.delete_user_folder(user_id)
+            self.user_repository.delete_user_by_id(user_id)
+
+        except ValueError as e:
+            raise e
+        except Exception as e:
+            logger.error(f"Error deleting profile for user {user_id}: {str(e)}")
+            raise ValueError(f"Failed to delete profile: {str(e)}")
 
 

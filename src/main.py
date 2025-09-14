@@ -4,7 +4,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import text
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from api import user, travel, travel_review, profile, ai_trip
+from api import user, travel_log, travel_review, profile, travel_stamp, ai_trip
 import os
 
 from database.connection import get_db
@@ -19,6 +19,8 @@ app.add_middleware(
         "http://localhost",
         "http://localhost:3000",
         "http://localhost:3001",
+        "https://localhost:3000",
+        "https://localhost:3001",
         "https://frontend-psi-five-43.vercel.app"
     ],
     allow_credentials=True,
@@ -27,10 +29,11 @@ app.add_middleware(
 )
 
 app.include_router(user.router)
-app.include_router(travel.router)
+app.include_router(travel_log.router)
 app.include_router(travel_review.router)
 app.include_router(profile.router)
 app.include_router(ai_trip.router)
+app.include_router(travel_stamp.router)
 
 @app.get("/")
 def read_root():

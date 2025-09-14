@@ -140,3 +140,10 @@ class UserRepository:
             profile_photo_key=user.kakao.profile_photo)
     
 
+    def delete_user_by_id(self, user_id: int) -> None:
+        result = self.db.query(User).filter(User.id == user_id).delete(synchronize_session=False)
+        if result == 0:
+            raise ValueError(f"User not found for id {user_id}")
+        self.db.commit()
+    
+

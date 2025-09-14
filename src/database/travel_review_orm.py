@@ -1,11 +1,9 @@
-from typing import List
-
 from sqlalchemy import Column, Integer, String, Text, Enum, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import Float, Boolean
 from database.base_entity import BaseEntity
 from database.orm import Base
-from schema.travel_request import TravelLogCreateRequest, TravelLocationCreateRequest
-from schema.travel_review_request import TravelReviewCreateRequest
+from schema.travel_review_request import TravelReviewCreateRequest, TravelReviewUpdateRequest
 
 
 class TravelReview(Base, BaseEntity) :
@@ -17,10 +15,13 @@ class TravelReview(Base, BaseEntity) :
     ai_rating = Column(Float, nullable=False)
     started_at = Column(String(256), nullable=False)
     finished_at = Column(String(256), nullable=False)
-    weather = Column(String(256), nullable=False) #enum
+    weather = Column(String(256), nullable=False) # enum
     mood = Column(Float, nullable=False)
     note = Column(Text, nullable=False)
-    song = Column(String(256), nullable=False) #추후 논의 필요
+    photos = relationship("TravelReviewPhoto", lazy="joined")
+    tags = relationship("TravelReviewTag", lazy="joined")
+
+    song = Column(String(256), nullable=False) # 추후 논의 필요
 
 
     @classmethod
@@ -37,3 +38,13 @@ class TravelReview(Base, BaseEntity) :
             note=request.note,
             song=request.song,
         )
+
+    def update_review(self, request:TravelReviewUpdateRequest) -> "TravelReview":
+        self.title = request.title
+        self.ai_rating = request.ai_rating
+        self.started_at = request.started_at
+        self.finished_at = request.finished_at
+        self.weather = request.weather.name
+        self.mood = request.mood
+        self.note = request.note
+        return self

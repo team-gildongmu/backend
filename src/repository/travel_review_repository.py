@@ -1,4 +1,7 @@
-from database.travel_orm import TravelStamp
+from typing import List
+
+from sqlalchemy import select, delete
+
 from database.travel_review_orm import TravelReview
 
 
@@ -11,3 +14,13 @@ class TravelReviewRepository:
         self.session.flush()
         self.session.refresh(instance=travel_review)
         return travel_review
+
+    def get_review_by_review_id(self, review_id: int) -> TravelReview | None:
+        return self.session.scalar(select(TravelReview).where(TravelReview.id == review_id))
+
+    def delete_review(self, review_id: int) -> None:
+        self.session.execute(delete(TravelReview).where(TravelReview.id == review_id))
+        self.session.commit()
+
+    def get_review_by_user_id(self, user_id: int) -> List[TravelReview]:
+        return self.session.scalars(select(TravelReview).where(TravelReview.user_id == user_id)).unique().all()

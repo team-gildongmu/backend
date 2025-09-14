@@ -36,6 +36,7 @@ jobs:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
         AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+        STAMP_RADIUS_KM: 2
         
 
       run: |
