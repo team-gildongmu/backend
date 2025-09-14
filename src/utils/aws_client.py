@@ -6,6 +6,7 @@ import logging
 from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 import os
+import mimetypes
 
 load_dotenv()
 
@@ -27,20 +28,32 @@ class AWSBotoClient:
         self.upload_file(folder_name, user_id, file_name, file_obj)
 
     def upload_file(self, folder_name: str, user_id: int, file_name: str, file_obj):
-        self.s3.upload_fileobj(file_obj, self.bucket_name, f"{folder_name}/{user_id}/{file_name}")
+        content_type, _ = mimetypes.guess_type(file_name)
+        content_type = content_type or "application/octet-stream"
+
+        self.s3.upload_fileobj(
+            Fileobj=file_obj,
+            Bucket=self.bucket_name,
+            Key=f"{folder_name}/{user_id}/{file_name}",
+            ExtraArgs={"ContentType": content_type, "ContentDisposition": "inline"}
+        )
 
     def get_file(self, key: str):
-        try:
-            link = self.s3.generate_presigned_url(
-                'get_object',
-                Params={'Bucket': self.bucket_name, 'Key': key},
-                ExpiresIn=3600,
-            )
-        except ClientError as e:
-            logging.error(e)
-            return None
+            try:
+                link = self.s3.generate_presigned_url(
+                    'get_object',
+                    Params={
+                        'Bucket': self.bucket_name,
+                        'Key': key,
+                        'ResponseContentDisposition': 'inline'
+                    },
+                    ExpiresIn=3600,
+                )
+            except ClientError as e:
+                logging.error(e)
+                return None
 
-        return link
+            return link
 
     def delete_file(self, file_key: str):
         response = self.s3.delete_object(Bucket=self.bucket_name, Key=file_key)
