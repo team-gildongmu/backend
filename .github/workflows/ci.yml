@@ -37,6 +37,16 @@ jobs:
         AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
         AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
         STAMP_RADIUS_KM: 2
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        TOURAPI_KEY: ${{ secrets.TOURAPI_KEY }}
+        REDIS_URL: ${{ secrets.REDIS_URL }}
+        LOG_LEVEL: INFO
+        SSL_ERROR_THRESHOLD: 2
+        MAX_POIS_FOR_LLM: 20
+        MAX_STAYS_FOR_LLM: 6
+        IMAGE_TOP_K: 3
         
 
       run: |
