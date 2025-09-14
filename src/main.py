@@ -4,7 +4,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import text
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from api import user, travel, travel_review, profile
+from api import user, travel, travel_review, profile, ai_trip
 import os
 
 from database.connection import get_db
@@ -30,6 +30,7 @@ app.include_router(user.router)
 app.include_router(travel.router)
 app.include_router(travel_review.router)
 app.include_router(profile.router)
+app.include_router(ai_trip.router)
 
 @app.get("/")
 def read_root():
