@@ -88,8 +88,8 @@ def mark_stamp_completed(
     }
 )
 def get_collectable_stamps(
-        latitude: float = Body(..., embed=True),
-        longitude: float = Body(..., embed=True),
+        latitude: float,
+        longitude: float,
         current_user: dict = Depends(JWTBearer()),
         session: Session = Depends(get_db)
 ):
