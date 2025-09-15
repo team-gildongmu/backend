@@ -180,6 +180,8 @@ class TravelLogService:
                     longitude=location.longitude,
                     latitude=location.latitude,
                     location_type=location.location_type,
+                    description=location.description,
+                    image=location.image,
                 )
                 grouped[location.travel_day].append(response)
 

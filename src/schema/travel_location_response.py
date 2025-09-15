@@ -1,6 +1,4 @@
 from pydantic import BaseModel
-from sqlalchemy.sql.sqltypes import Float
-
 
 class TravelLocationResponse(BaseModel):
     travel_location_id: int
@@ -22,6 +20,8 @@ class TravelLocationMapResponse(BaseModel):
     longitude: float
     latitude: float
     location_type: str
+    description: str
+    image: str
 
     class Config:
         from_attributes = True
