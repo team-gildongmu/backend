@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from schema.travel_log_request import TravelLogCreateRequest
-from schema.travel_log_response import TravelLogCreateResponse, TravelLogResponse, TravelLogMapResponse
+from schema.travel_log_response import TravelLogCreateResponse, TravelLogResponse, TravelLogMapResponse, \
+    TravelLogListResponse
 from service.travel_log_service import TravelLogService
 from utils.auth_util import JWTBearer
 
@@ -37,7 +38,10 @@ def create_travel_log_handler(
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@router.get("/log/list")
+@router.get(
+    "/log/list",
+    response_model=TravelLogListResponse,
+)
 def get_travel_log_list_handler(
         theme: str | None = None,
         session: Session = Depends(get_db),
