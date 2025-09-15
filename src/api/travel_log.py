@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -40,7 +41,7 @@ def create_travel_log_handler(
 
 @router.get(
     "/log/list",
-    response_model=TravelLogListResponse,
+    response_model=List[TravelLogListResponse],
 )
 def get_travel_log_list_handler(
         theme: str | None = None,
