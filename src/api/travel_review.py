@@ -10,6 +10,8 @@ from schema.travel_review_response import TravelReviewCreateResponse
 from service.travel_review_service import TravelReviewService
 from utils.auth_util import JWTBearer
 
+from schema.travel_review_response import TravelReviewListResponse
+
 router = APIRouter(prefix="/travel")
 
 @router.post(
@@ -139,7 +141,11 @@ def get_travel_review(
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@router.get("/review/list", status_code=200)
+@router.get(
+    "/review/list",
+    response_model=List[TravelReviewListResponse],
+    status_code=200
+)
 def get_travel_review_list_handler(
         session: Session = Depends(get_db),
         payload: dict = Depends(JWTBearer()),

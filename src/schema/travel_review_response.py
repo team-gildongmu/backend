@@ -25,12 +25,16 @@ class TravelReviewResponse(BaseModel):
 
 class TravelReviewListResponse(BaseModel):
     travel_review_id: int
+    user_nickname: str
+    user_photo: str
     title: str
     ai_rating: float
     start_date: str
     end_date: str
     weather: str
     image: List[str]
+    tags: List[str]
+    description: str
 
     class Config:
         from_attributes = True
