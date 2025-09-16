@@ -133,7 +133,7 @@ class TravelReviewService:
                 weather=WEATHER_LABELS.get(travel_review.weather, travel_review.weather),
                 image=image_urls,
                 tags=tags,
-                description=travel_review.description,
+                note=travel_review.note,
             )
             result.append(response_item)
 

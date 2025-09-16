@@ -34,7 +34,7 @@ class TravelReviewListResponse(BaseModel):
     weather: str
     image: List[str]
     tags: List[str]
-    description: str
+    note: str
 
     class Config:
         from_attributes = True
