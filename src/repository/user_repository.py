@@ -64,8 +64,7 @@ class UserRepository:
         kakao_user = KakaoUser(
             user_id=user.id,
             nickname=kakao_profile["properties"]["nickname"],
-            ### Profile image OT thumbnail..?
-            profile_photo=kakao_profile["properties"].get("profile_image")
+            profile_photo=None  # No longer collecting profile images during user creation
         )
         self.db.add(kakao_user)
         self.db.commit()
