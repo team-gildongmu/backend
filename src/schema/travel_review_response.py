@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -26,7 +26,7 @@ class TravelReviewResponse(BaseModel):
 class TravelReviewListResponse(BaseModel):
     travel_review_id: int
     user_nickname: str
-    user_photo: str
+    user_photo: Optional[str]
     title: str
     ai_rating: float
     start_date: str
