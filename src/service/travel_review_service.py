@@ -106,7 +106,7 @@ class TravelReviewService:
 
     def get_travel_review_list(self, user_id: int) -> List[TravelReviewListResponse]:
         user_profile = self.user_repo.get_profile(user_id)
-        user_photo_url = self.s3_client.get_file(user_profile.profile_photo_key)
+        user_photo_url = self.s3_client.get_file(user_profile.profile_photo_key) if user_profile.profile_photo_key else None
 
         travel_reviews = self.travel_review_repo.get_review_by_user_id(user_id)
         result = []
