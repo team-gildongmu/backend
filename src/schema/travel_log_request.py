@@ -13,6 +13,9 @@ class TravelLocationCreateRequest(BaseModel):
     reason: str
     image: str
     coords: Location
+    provider: str
+    source: str
+
     # sequence: int
     # congestion: str
 

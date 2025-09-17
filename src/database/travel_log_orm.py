@@ -23,7 +23,7 @@ class TravelLog(Base, BaseEntity):
         return cls(
             title=request.title,
             subtitle=request.subtitle,
-            summary=request.summary,
+            summary=request.summary.replace("\n", "").replace("\r", ""),
             theme=request.theme,
             user_id=user_id,
         )
