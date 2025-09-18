@@ -97,6 +97,7 @@ def start_session(
         "plan": {},
         "status": {"step": "INIT", "message": "세션 시작"},
         "_meta": {"createdAt": _now_ms()},
+        "history": [], # 멀티턴 대화 히스토리
         "_user_id": user_id,
         "_session_id": sid,
     }
@@ -113,12 +114,15 @@ def send_message(
     user_id = _require_user_id_from_header(authorization)
     key = _conv_key(user_id, sid)
     r = get_redis()
+
     raw = r.get(key)
     if not raw:
         raise HTTPException(status_code=404, detail="세션이 만료되었거나 존재하지 않습니다.")
     state = json.loads(raw)
 
-    # 멀티턴 업데이트
+    hist = state.get("history", [])
+    hist.append({"role": "user", "text": body.message, "ts": _now_ms()})
+
     state["userQuery"] = body.message
     if body.origin is not None:
         state["origin"] = body.origin.dict()
@@ -129,22 +133,29 @@ def send_message(
     if body.tags is not None:
         state["tags"] = body.tags
 
-    # 안전하게 사용자/세션 id 유지
     state["_user_id"] = user_id
     state["_session_id"] = sid
+    state["history"] = hist
 
-    # 실행
     out = GRAPH.invoke(state)
     plan   = out.get("plan", {})
     status = out.get("status", {"step": "DONE", "message": "완료되었습니다."})
 
-    # 최종 결과도 상태 채널로 브로드캐스트 (선택)
-    chan = _status_channel(user_id, sid)
-    r.publish(chan, json.dumps({"user_id": user_id, "session_id": sid, "step":"RESULT", "plan": plan, "ts": _now_ms()}, ensure_ascii=False))
-    r.publish(chan, json.dumps({"user_id": user_id, "session_id": sid, "step":"DONE",   "message":"완료되었습니다.", "ts": _now_ms()}, ensure_ascii=False))
+    hist.append({"role": "assistant", "plan": plan, "ts": _now_ms()})
 
-    # 상태 저장(멀티턴 지속)
+    chan = _status_channel(user_id, sid)
+    r.publish(chan, json.dumps({
+        "user_id": user_id, "session_id": sid,
+        "step": "RESULT", "plan": plan, "ts": _now_ms()
+    }, ensure_ascii=False))
+    r.publish(chan, json.dumps({
+        "user_id": user_id, "session_id": sid,
+        "step": "DONE", "message": "완료되었습니다.", "ts": _now_ms()
+    }, ensure_ascii=False))
+
+    out["history"] = hist
     r.setex(key, TTL_SECONDS, json.dumps(out, ensure_ascii=False))
+
     return MessageResponse(plan=plan, status=status)
 
 @router.get("/session/{sid}/state", response_model=StateResponse)

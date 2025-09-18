@@ -85,6 +85,16 @@ def _mk_session() -> requests.Session:
 
 SESSION = _mk_session()
 
+def _first_image_str(imgs) -> str:
+    # imgs 가 문자열이면 그대로, 리스트면 첫 요소, 없으면 빈 문자열
+    if not imgs:
+        return ""
+    if isinstance(imgs, str):
+        return imgs
+    if isinstance(imgs, list) and imgs:
+        return imgs[0]
+    return ""
+
 def tourapi_params(**kwargs):
     base = dict(serviceKey=SERVICE_KEY, MobileOS=MOBILE_OS, MobileApp=MOBILE_APP, _type="json")
     base.update({k: v for k, v in kwargs.items() if v not in [None, "", [], {}]})
@@ -133,6 +143,7 @@ class TripState(TypedDict, total=False):
     stays: List[Dict[str, Any]]
     plan: Dict[str, Any]
     status: Dict[str, str]
+    history: List[Dict[str, Any]] #멀티턴 대화 히스토리
     _user_id: str
     _session_id: str
 
@@ -439,31 +450,51 @@ def node_fetch_pois(state: TripState):
 
         pois = []
         for it in spots:
-            pois.append({
+            item = {
                 "type": "POI", "title": it.get("title"), "desc": it.get("desc") or "",
                 "reason": it.get("reason") or "일정 동선에 맞춰 추천합니다.",
-                "images": it.get("images", []), "coords": it["coords"],
+                "coords": it["coords"],
                 "provider": it.get("provider"), "source": it.get("source")
-            })
+            }
+            imgs = (it.get("images") or [])[:3]
+            item["image"] = _first_image_str(imgs)
+            pois.append(item)
+
         for it in eats:
-            pois.append({
+            item = {
                 "type": "MEAL", "title": it.get("title"), "desc": it.get("desc") or "",
                 "reason": it.get("reason") or "이 일대 대표 맛집으로 추천합니다.",
-                "images": it.get("images", []), "coords": it["coords"],
+                "coords": it["coords"],
                 "provider": it.get("provider"), "source": it.get("source")
-            })
+            }
+            imgs = (it.get("images") or [])[:3]
+            item["image"] = _first_image_str(imgs)
+            pois.append(item)
+
+        # Google 보강(g_pois)
         for it in g_pois:
+            imgs = (it.get("images") or [])[:3]
+            it["image"] = _first_image_str(imgs)
+            it.pop("images", None)
             pois.append(it)
 
         stays_std = []
         for it in stays:
-            stays_std.append({
-                "type": "STAY", "title": it.get("title"), "desc": it.get("desc") or "주변 숙박 후보",
+            item = {
+                "type": "STAY", "title": it.get("title"),
+                "desc": it.get("desc") or "주변 숙박 후보",
                 "reason": it.get("reason") or "동선과 접근성을 고려해 추천합니다.",
-                "images": it.get("images", []), "coords": it["coords"],
+                "coords": it["coords"],
                 "provider": it.get("provider"), "source": it.get("source")
-            })
+            }
+            imgs = (it.get("images") or [])[:3]
+            item["image"] = _first_image_str(imgs)
+            stays_std.append(item)
+
         for it in g_stays:
+            imgs = (it.get("images") or [])[:3]
+            it["image"] = _first_image_str(imgs)
+            it.pop("images", None)
             stays_std.append(it)
 
         pois      = _dedup_by_title([p for p in pois if _valid(p)])
@@ -526,13 +557,18 @@ def node_build_itinerary(state: TripState):
     def _clean_segments_strict(segs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         cleaned = []
         for s in segs:
+            # 1) images 표준화(배열 → 최대 3개 유지)
             imgs = s.get("images") or []
-            if isinstance(imgs, str): imgs = [imgs]
-            s["images"] = imgs[:3]
+            if isinstance(imgs, str):
+                imgs = [imgs]
+            imgs = imgs[:3]
+            s["images"] = imgs
 
+            # 2) 좌표 보정
             if not isinstance(s.get("coords"), dict):
                 s["coords"] = {"mapx": None, "mapy": None}
 
+            # 3) 카탈로그 메타 병합
             k = _norm_title(s.get("title"))
             meta = catalog_index.get(k, {})
             if not s.get("provider"):
@@ -545,7 +581,12 @@ def node_build_itinerary(state: TripState):
             if not s.get("images"):
                 s["images"] = (meta.get("images") or [])[:3]
 
-            if _valid(s):
+            # 4) ★ 단일 문자열로 저장
+            s["image"] = _first_image_str(s.get("images"))
+            s.pop("images", None)
+
+            if _valid({"title": s.get("title"), "coords": s.get("coords"),
+                    "provider": s.get("provider"), "source": s.get("source")}):
                 cleaned.append(s)
         return cleaned
 
