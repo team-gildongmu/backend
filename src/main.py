@@ -9,6 +9,17 @@ import os
 
 from database.connection import get_db
 
+import logging
+from fastapi import FastAPI
+
+
+logging.basicConfig(
+    level=logging.INFO,  
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+
+logger = logging.getLogger(__name__)
+
 app = FastAPI()
 
 
@@ -45,8 +56,4 @@ def test_db(db: Session = Depends(get_db)):
     # 그냥 커넥션 테스트 쿼리
     db.execute(text("SELECT 1"))
     return {"db_connection": "ok"}
-
-
-
-
 
