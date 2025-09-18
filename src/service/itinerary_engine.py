@@ -257,6 +257,64 @@ def google_places_search(area_kw: str, query: str, type_hint: Optional[str], ori
     q = f"{area_kw} {query}".strip()
     return _places_v1_search_text(q, included_type=type_hint, origin=origin, radius_m=7000.0, max_count=12, language="ko", region="KR")
 
+# ---------------------------------------------------------------------
+# Theme 표준화
+# ---------------------------------------------------------------------
+ALLOWED_THEMES = [
+    "자연", "도심", "야경", "역사", "맛집", "힐링", "신나게", "쇼핑", "문화/예술", "휴양/휴식"
+]
+
+# 키워드에 해당하면 ALLOWED_THEMES 중 어떤 것인지 매핑
+THEME_SYNONYMS = {
+    "자연": ["자연", "숲", "공원", "산", "바다", "호수", "해변", "트레킹", "산책"],
+    "도심": ["도심", "도시", "시내", "핫플", "카페거리", "번화가", "다운타운"],
+    "야경": ["야경", "야간", "밤", "루프탑", "나이트"],
+    "역사": ["역사", "유적", "궁", "성곽", "사적지", "한옥", "박물관(역사)"],
+    "맛집": ["맛집", "먹방", "미식", "카페", "디저트", "식도락", "맛있는"],
+    "힐링": ["힐링", "명상", "휴식", "차분", "잔잔"],
+    "신나게": ["신나게", "액티비티", "레저", "놀이공원", "익스트림", "체험"],
+    "쇼핑": ["쇼핑", "아울렛", "백화점", "시장", "플리마켓", "쇼핑몰"],
+    "문화/예술": ["문화", "예술", "전시", "공연", "뮤지컬", "갤러리", "아트", "콘서트"],
+    "휴양/휴식": ["휴양", "휴식", "스파", "온천", "리조트", "호캉스"]
+}
+
+def _map_theme_from_text(value: str) -> Optional[str]:
+    s = (value or "").lower()
+    # 1) 정확일치(허용셋)
+    for t in ALLOWED_THEMES:
+        if s == t.lower():
+            return t
+    # 2) 시소러스 포함 매칭
+    for allowed, kws in THEME_SYNONYMS.items():
+        for kw in kws:
+            if kw.lower() in s:
+                return allowed
+    return None
+
+def _pick_theme(existing_theme: Any, tags: List[str]) -> str:
+    """
+    - plan에 theme가 문자열로 있으면 그대로 사용(허용 셋이면), 아니면 근사치 매핑
+    - plan.theme가 배열이거나, 없으면 tags에서 근사치 매핑
+    - 결국 하나의 문자열 반환, 못 정하면 '도심' 기본값
+    """
+    # plan.theme 우선
+    if isinstance(existing_theme, str):
+        m = _map_theme_from_text(existing_theme)
+        if m: return m
+        # 허용 셋이 아니면 근사치가 없더라도 일단 가장 비슷한 것 시도 후 실패 시 tags로
+    elif isinstance(existing_theme, list):
+        for v in existing_theme:
+            m = _map_theme_from_text(str(v))
+            if m: return m
+
+    # tags에서 선택
+    for t in tags or []:
+        m = _map_theme_from_text(str(t))
+        if m: return m
+
+    # 그래도 없으면 기본값
+    return "도심"
+
 def _synthesize_desc_reason(name: str, seg_type: str) -> Dict[str, str]:
     if seg_type == "POI":
         desc   = f"{name}은(는) 산책과 사진 촬영에 좋은 명소로, 주변 볼거리와 접근성이 좋아요."
@@ -555,8 +613,8 @@ def node_build_itinerary(state: TripState):
 
     plan["stays"] = _clean_segments_strict(plan.get("stays", []))
 
-    # ★ theme 주입 (tags 그대로)
-    plan["theme"] = state.get("tags", [])
+    # theme 주입 (tags 그대로)
+    plan["theme"] = _pick_theme(plan.get("theme"), state.get("tags", []))
 
     _set_status(state, "DONE", "완료되었습니다.")
     return {**state, "plan": plan}
