@@ -47,11 +47,11 @@ class KakaoClient:
         response.raise_for_status()
         return response.json()
     
-    def _get_kakao_access_token(self, authorization_code: str) -> str:
+    def _get_kakao_access_token(self, authorization_code: str, redirect_uri: str) -> str:
         """Exchange authorization code for Kakao access token"""
         client_id = os.getenv("KAKAO_CLIENT_ID")
         client_secret = os.getenv("KAKAO_CLIENT_SECRET")
-        redirect_uri = os.getenv("KAKAO_REDIRECT_URI")
+        #redirect_uri = os.getenv("KAKAO_REDIRECT_URI")
         
         token_url = "https://kauth.kakao.com/oauth/token"
         data = {
