@@ -2,6 +2,10 @@ import requests
 from typing import Dict, Optional
 import os
 
+import logging
+
+logger = logging.getLogger(__name__) 
+
 class KakaoClient:
     def __init__(self, client_id: str, client_secret: Optional[str], redirect_uri: str):
         self.client_id = client_id
@@ -47,11 +51,11 @@ class KakaoClient:
         response.raise_for_status()
         return response.json()
     
-    def _get_kakao_access_token(self, authorization_code: str) -> str:
+    def _get_kakao_access_token(self, authorization_code: str, redirect_uri: str) -> str:
         """Exchange authorization code for Kakao access token"""
         client_id = os.getenv("KAKAO_CLIENT_ID")
         client_secret = os.getenv("KAKAO_CLIENT_SECRET")
-        redirect_uri = os.getenv("KAKAO_REDIRECT_URI")
+        #redirect_uri = os.getenv("KAKAO_REDIRECT_URI")
         
         token_url = "https://kauth.kakao.com/oauth/token"
         data = {
@@ -62,10 +66,26 @@ class KakaoClient:
             "redirect_uri": redirect_uri
         }
         
-        response = requests.post(token_url, data=data)
-        response.raise_for_status()
-        token_data = response.json()
-        return token_data["access_token"]
+        try:
+            response = requests.post(token_url, data=data, timeout=15)
+            if response.status_code != 200:
+                try:
+                    error_body = response.json()
+                except ValueError:
+                    error_body = response.text
+                logger.error(f"Kakao token request failed: {response.status_code} {error_body}")
+                response.raise_for_status()
+
+            token_data = response.json()
+            logger.info(f"Kakao token received successfully for code ending with {authorization_code[-4:]}")
+            return token_data["access_token"]
+
+        except requests.Timeout:
+            logger.error("Kakao token request timed out")
+            raise
+        except requests.RequestException as e:
+            logger.error(f"Exception during Kakao token request: {e}")
+            raise
     
     def _get_kakao_user_profile(self, access_token: str) -> dict:
         """Get user profile from Kakao API"""

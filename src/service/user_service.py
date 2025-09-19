@@ -25,11 +25,11 @@ class UserService:
         self.kakao_client = KakaoClient(client_id, client_secret, redirect_uri)
         self.s3_client = AWSBotoClient()
 
-    def authenticate_with_kakao(self, authorization_code: str):
+    def authenticate_with_kakao(self, authorization_code: str, redirect_uri: str):
         """Complete Kakao OAuth flow and return user with tokens"""
         try:
 
-            kakao_access_token = self.kakao_client._get_kakao_access_token(authorization_code)
+            kakao_access_token = self.kakao_client._get_kakao_access_token(authorization_code, redirect_uri)
             kakao_profile = self.kakao_client._get_kakao_user_profile(kakao_access_token)
             user, is_new_user = self.user_repository.get_or_create_kakao_user(kakao_profile)
             access_token = create_access_token(user.id, user.email)

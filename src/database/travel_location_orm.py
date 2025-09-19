@@ -20,6 +20,8 @@ class TravelLocation(Base, BaseEntity) :
     reason = Column(Text, nullable=False)
     image_link = Column(String(256))
     travel_day = Column(Integer)
+    provider = Column(String(256))
+    source= Column(String(256))
 
     sequence = Column(Integer)
     congestion = Column(String(256))
@@ -38,7 +40,9 @@ class TravelLocation(Base, BaseEntity) :
             travel_log_id=travel_log_id,
             user_id=user_id,
             image_link=image_link,
-            travel_day=travel_day
+            travel_day=travel_day,
+            provider=request.provider,
+            source=request.source,
 
             # sequence=request.sequence,
             # congestion=request.congestion,

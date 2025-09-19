@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, Header
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -11,6 +11,7 @@ import json
 import logging
 from utils.jwt_utils import decode_token, create_access_token
 from utils.auth_util import get_refresh_token_from_cookie, JWTBearer
+from typing import Optional
 
 
 # Set up logging
@@ -28,7 +29,10 @@ router = APIRouter(prefix="/auth")
         500: {"description": "Internal server error"}
     }
 )
-async def kakao_callback(request: KakaoLoginRequest, db: Session = Depends(get_db)):
+async def kakao_callback(
+    request: KakaoLoginRequest, 
+    db: Session = Depends(get_db),
+    origin: Optional[str] = Header(default=None),):
     """
     Handle Kakao OAuth callback.
     """
@@ -49,9 +53,21 @@ async def kakao_callback(request: KakaoLoginRequest, db: Session = Depends(get_d
         user_service = UserService(db)
         
         try:
-            result = user_service.authenticate_with_kakao(request.code)
+            allowed_origins = [
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "https://frontend-psi-five-43.vercel.app"
+                ]
+
+            if origin in allowed_origins:
+                redirect_uri = f"{origin}/oauth/kakao"
+            else:   
+                redirect_uri = "https://frontend-psi-five-43.vercel.app/oauth/kakao"
+
             
-            # Check if all required fields are present
+            result = user_service.authenticate_with_kakao(request.code, redirect_uri)
+            
+            
             if not result or 'access_token' not in result or 'refresh_token' not in result:
                 print("Missing required fields in result")
                 raise HTTPException(status_code=500, detail="Service returned incomplete data")
