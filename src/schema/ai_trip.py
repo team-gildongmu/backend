@@ -1,7 +1,6 @@
 # src/schema/ai_trip.py
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-
+from typing import Optional, List, Dict, Any, Literal
 class Coords(BaseModel):
     mapX: float
     mapY: float
@@ -11,6 +10,7 @@ class StartSessionRequest(BaseModel):
     days: int = 1
     mode: str = "walk"
     tags: List[str] = Field(default_factory=list)
+    lang: Optional[Literal["ko", "en", "ja"]] = "ko"
 
 class StartSessionResponse(BaseModel):
     session_id: str
@@ -21,10 +21,12 @@ class MessageRequest(BaseModel):
     days: Optional[int] = None
     mode: Optional[str] = None
     tags: Optional[List[str]] = None
+    lang: Optional[Literal["ko", "en", "ja"]] = "ko"
 
 class MessageResponse(BaseModel):
     plan: Dict[str, Any]
     status: Dict[str, str]
+    
 
 class StateResponse(BaseModel):
     state: Dict[str, Any]
