@@ -37,9 +37,7 @@ def _require_user_id_from_header(authorization: Optional[str]) -> str:
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-    user_id = str(payload.get("user_id") or payload.get("sub") or "")
-
-    # user_id 없으면 email로 대체 (문자열 키로 쓰기 좋음)
+    user_id = str(payload.get("user_id") or payload.get("sub") or "")  # sub 호환
     if not user_id:
         email = payload.get("email")
         if not email:
@@ -86,6 +84,9 @@ def start_session(
     sid = uuid.uuid4().hex[:12]
     key = _conv_key(user_id, sid)
 
+    # 프론트에서 넘어온 언어 (ko|en|ja), 없으면 None → 엔진에서 auto-detect 가능
+    lang = getattr(body, "lang", None)
+
     state: Dict[str, Any] = {
         "userQuery": "시작",
         "origin": (body.origin.dict() if body.origin else None),
@@ -97,10 +98,13 @@ def start_session(
         "plan": {},
         "status": {"step": "INIT", "message": "세션 시작"},
         "_meta": {"createdAt": _now_ms()},
-        "history": [], # 멀티턴 대화 히스토리
+        "history": [],  # 멀티턴 대화 히스토리
         "_user_id": user_id,
         "_session_id": sid,
     }
+    if lang:
+        state["lang"] = lang  # ★ 언어 고정
+
     r = get_redis()
     r.setex(key, TTL_SECONDS, json.dumps(state, ensure_ascii=False))
     return StartSessionResponse(session_id=sid)
@@ -111,6 +115,8 @@ def send_message(
     body: MessageRequest,
     authorization: str | None = Header(None),
 ):
+    print("▶ [DEBUG] body.lang =", body.lang)
+
     user_id = _require_user_id_from_header(authorization)
     key = _conv_key(user_id, sid)
     r = get_redis()
@@ -132,6 +138,9 @@ def send_message(
         state["mode"] = body.mode
     if body.tags is not None:
         state["tags"] = body.tags
+    # ★ 프론트에서 매 턴마다 lang을 보낼 수 있게 허용 (미보내면 기존 유지)
+    if getattr(body, "lang", None):
+        state["lang"] = body.lang
 
     state["_user_id"] = user_id
     state["_session_id"] = sid
