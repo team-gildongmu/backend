@@ -18,7 +18,7 @@ class TravelLocation(Base, BaseEntity) :
     location_type = Column(String(256), nullable=False)
     description = Column(Text, nullable=False)
     reason = Column(Text, nullable=False)
-    image_link = Column(String(256))
+    image_link = Column(Text)
     travel_day = Column(Integer)
     provider = Column(String(256))
     source= Column(String(256))
